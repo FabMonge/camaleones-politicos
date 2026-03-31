@@ -1,0 +1,298 @@
+{
+  "ahora_nacion___an": {
+    "nombre": "AHORA NACION - AN",
+    "logo": "LOGO_AHORA NACION - AN_2980.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "alianza_electoral_venceremos": {
+    "nombre": "ALIANZA ELECTORAL VENCEREMOS",
+    "logo": "LOGO_ALIANZA ELECTORAL VE_3025.png",
+    "tipo": null,
+    "alcance": null,
+    "estado": null,
+    "color": "#CCCCCC"
+  },
+  "alianza_para_el_progreso": {
+    "nombre": "ALIANZA PARA EL PROGRESO",
+    "logo": "LOGO_ALIANZA PARA EL PROG_1257.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "CANCELADO",
+    "color": "#CCCCCC"
+  },
+  "avanza_pais___partido_de_integracion_social": {
+    "nombre": "AVANZA PAIS - PARTIDO DE INTEGRACION SOCIAL",
+    "logo": "LOGO_AVANZA PAIS - PARTID_2173.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "CANCELADO",
+    "color": "#CCCCCC"
+  },
+  "fe_en_el_peru": {
+    "nombre": "FE EN EL PERU",
+    "logo": "LOGO_FE EN EL PERU_2898.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "frente_popular_agricola_fia_del_peru": {
+    "nombre": "FRENTE POPULAR AGRICOLA FIA DEL PERU",
+    "logo": "LOGO_FRENTE POPULAR AGRIC_2901.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "CANCELADO",
+    "color": "#CCCCCC"
+  },
+  "fuerza_popular": {
+    "nombre": "FUERZA POPULAR",
+    "logo": "LOGO_FUERZA POPULAR_1366.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "fuerza_y_libertad": {
+    "nombre": "FUERZA Y LIBERTAD",
+    "logo": "LOGO_FUERZA Y LIBERTAD_3024.png",
+    "tipo": null,
+    "alcance": null,
+    "estado": null,
+    "color": "#CCCCCC"
+  },
+  "juntos_por_el_peru": {
+    "nombre": "JUNTOS POR EL PERU",
+    "logo": "LOGO_JUNTOS POR EL PERU_1264.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "libertad_popular": {
+    "nombre": "LIBERTAD POPULAR",
+    "logo": "LOGO_LIBERTAD POPULAR_2933.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_aprista_peruano": {
+    "nombre": "PARTIDO APRISTA PERUANO",
+    "logo": "LOGO_PARTIDO APRISTA PERU_2930.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_civico_obras": {
+    "nombre": "PARTIDO CIVICO OBRAS",
+    "logo": "LOGO_PARTIDO CIVICO OBRAS_2941.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_de_los_trabajadores_y_emprendedores_pte___peru": {
+    "nombre": "PARTIDO DE LOS TRABAJADORES Y EMPRENDEDORES PTE - PERU",
+    "logo": "LOGO_PARTIDO DE LOS TRABA_2939.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_del_buen_gobierno": {
+    "nombre": "PARTIDO DEL BUEN GOBIERNO",
+    "logo": "LOGO_PARTIDO DEL BUEN GOB_2961.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_democrata_unido_peru": {
+    "nombre": "PARTIDO DEMOCRATA UNIDO PERU",
+    "logo": "LOGO_PARTIDO DEMOCRATA UN_2867.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_democrata_verde": {
+    "nombre": "PARTIDO DEMOCRATA VERDE",
+    "logo": "LOGO_PARTIDO DEMOCRATA VE_2895.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_democratico_federal": {
+    "nombre": "PARTIDO DEMOCRATICO FEDERAL",
+    "logo": "LOGO_PARTIDO DEMOCRATICO_2986.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_democratico_somos_peru": {
+    "nombre": "PARTIDO DEMOCRATICO SOMOS PERU",
+    "logo": "LOGO_PARTIDO DEMOCRATICO_14.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_frente_de_la_esperanza_2021": {
+    "nombre": "PARTIDO FRENTE DE LA ESPERANZA 2021",
+    "logo": "LOGO_PARTIDO FRENTE DE LA_2857.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_morado": {
+    "nombre": "PARTIDO MORADO",
+    "logo": "LOGO_PARTIDO MORADO_2840.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_pais_para_todos": {
+    "nombre": "PARTIDO PAIS PARA TODOS",
+    "logo": "LOGO_PARTIDO PAIS PARA TO_2956.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_patriotico_del_peru": {
+    "nombre": "PARTIDO PATRIOTICO DEL PERU",
+    "logo": "LOGO_PARTIDO PATRIOTICO D_2869.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_politico_cooperacion_popular": {
+    "nombre": "PARTIDO POLITICO COOPERACION POPULAR",
+    "logo": "LOGO_PARTIDO POLITICO COO_2995.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_politico_integridad_democratica": {
+    "nombre": "PARTIDO POLITICO INTEGRIDAD DEMOCRATICA",
+    "logo": "LOGO_PARTIDO POLITICO INT_2985.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_politico_nacional_peru_libre": {
+    "nombre": "PARTIDO POLITICO NACIONAL PERU LIBRE",
+    "logo": "LOGO_PARTIDO POLITICO NAC_2218.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_politico_peru_accion": {
+    "nombre": "PARTIDO POLITICO PERU ACCION",
+    "logo": "LOGO_PARTIDO POLITICO PER_2932.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_politico_peru_primero": {
+    "nombre": "PARTIDO POLITICO PERU PRIMERO",
+    "logo": "LOGO_PARTIDO POLITICO PER_2925.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_politico_prin": {
+    "nombre": "PARTIDO POLITICO PRIN",
+    "logo": "LOGO_PARTIDO POLITICO PRI_2921.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "partido_sicreo": {
+    "nombre": "PARTIDO SICREO",
+    "logo": "LOGO_PARTIDO SICREO_2935.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "peru_moderno": {
+    "nombre": "PERU MODERNO",
+    "logo": "LOGO_PERU MODERNO_2924.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "podemos_peru": {
+    "nombre": "PODEMOS PERU",
+    "logo": "LOGO_PODEMOS PERU_2731.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "primero_la_gente___comunidad__ecologia__libertad_y_progreso": {
+    "nombre": "PRIMERO LA GENTE - COMUNIDAD, ECOLOGIA, LIBERTAD Y PROGRESO",
+    "logo": "LOGO_PRIMERO LA GENTE - C_2931.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "progresemos": {
+    "nombre": "PROGRESEMOS",
+    "logo": "LOGO_PROGRESEMOS_2967.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "renovacion_popular": {
+    "nombre": "RENOVACION POPULAR",
+    "logo": "LOGO_RENOVACION POPULAR_22.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "salvemos_al_peru": {
+    "nombre": "SALVEMOS AL PERU",
+    "logo": "LOGO_SALVEMOS AL PERU_2927.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "un_camino_diferente": {
+    "nombre": "UN CAMINO DIFERENTE",
+    "logo": "LOGO_UN CAMINO DIFERENTE_2998.png",
+    "tipo": "PARTIDO POLÍTICO",
+    "alcance": "NACIONAL",
+    "estado": "INSCRITO",
+    "color": "#CCCCCC"
+  },
+  "unidad_nacional": {
+    "nombre": "UNIDAD NACIONAL",
+    "logo": "LOGO_UNIDAD NACIONAL_3023.png",
+    "tipo": null,
+    "alcance": null,
+    "estado": null,
+    "color": "#CCCCCC"
+  }
+}

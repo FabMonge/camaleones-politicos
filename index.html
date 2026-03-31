@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camaleones políticos - ECData</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="special-header">
+        <div class="kicker">
+            <img src="fotos/logo_ecdata.png" alt="Logo ECData" onerror="this.style.display='none'">
+        </div>
+        
+        <h1 class="headline">Camaleones políticos</h1>
+        <h2 class="subheadline">Los mismos de siempre, en diferentes partidos</h2>
+        
+        <p class="intro-text">El transfuguismo y el salto de una agrupación a otra es una práctica común en la política peruana. Exploramos el historial de los candidatos que postulan en las elecciones 2026 para descubrir cuántas camisetas han vestido a lo largo de su carrera.</p>
+        
+        <div class="header-divider"></div>
+        <div class="date-published">31 de marzo de 2026</div>
+        
+        <div class="social-share-container">
+            <a href="https://www.facebook.com/sharer/sharer.php?u=https://elcomercio.pe/ecdata/keiko-fujimori-rafael-lopez-aliaga-elecciones-onpe-jne-pcm-12-de-abril-alfonso-lopez-chau-carlos-alvarez-congreso-noticia/" class="social-btn" title="Compartir en Facebook">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/></svg>
+            </a>
+            <a href="https://twitter.com/intent/tweet?url=https://elcomercio.pe/ecdata/keiko-fujimori-rafael-lopez-aliaga-elecciones-onpe-jne-pcm-12-de-abril-alfonso-lopez-chau-carlos-alvarez-congreso-noticia/&text=Camaleones%20políticos:%20Los%20mismos%20de%20siempre,%20en%20diferentes%20partidos.%20Un%20especial%20interactivo%20de%20ECData." class="social-btn" title="Compartir en X (Twitter)">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="https://api.whatsapp.com/send?text=Mira%20este%20especial%20interactivo%20sobre%20los%20políticos%20que%20más%20cambiaron%20de%20partido:%20https://elcomercio.pe/ecdata/keiko-fujimori-rafael-lopez-aliaga-elecciones-onpe-jne-pcm-12-de-abril-alfonso-lopez-chau-carlos-alvarez-congreso-noticia/" class="social-btn" title="Compartir en WhatsApp">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+            </a>
+        </div>
+    </header>
+
+    <article class="story-text">
+        <p>A menos de un mes de los comicios, el mapa de candidatos revela una constante: la lealtad partidaria es una excepción, no la regla. Al analizar la base de datos de los más de 8,300 postulantes, encontramos un panorama fragmentado donde las agrupaciones políticas funcionan, en muchos casos, como vientres de alquiler.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ultricies dui vitae risus fringilla porttitor sit amet ac dolor. Etiam luctus nunc metus, ut elementum nunc interdum nec. Mauris sit amet libero fermentum, convallis erat eu, accumsan purus.</p>
+    </article>
+
+    <div class="instrucciones-caja">
+        <span class="instrucciones-titulo">💡 Cómo leer estos rankings:</span>
+        <ul>
+            <li>Explora a los políticos con mayor cantidad de partidos en su historial.</li>
+            <li><strong>Filtra por agrupación:</strong> Usa el menú inferior para aislar a los candidatos que hoy postulan por un partido en específico.</li>
+        </ul>
+    </div>
+    
+    <div class="anio-titulo">El podio del transfuguismo y la insistencia</div>
+    
+    <div class="ranking-filters-container">
+        <select id="ranking-partido-select" class="ranking-dropdown">
+            <option value="ALL">Ranking General (Todos los partidos)</option>
+        </select>
+    </div>
+
+    <div class="rankings-wrapper" id="rankings-wrapper">
+        </div>
+    
+    <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> Infogob (Jurado Nacional de Elecciones)</div>
+
+    <article class="story-text">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ultricies dui vitae risus fringilla porttitor sit amet ac dolor. Etiam luctus nunc metus, ut elementum nunc interdum nec.</p>
+        <p>Mauris sit amet libero fermentum, convallis erat eu, accumsan purus. Donec congue mollis ullamcorper. Donec ut turpis aliquam, auctor magna et, viverra eros. Nam ullamcorper quis velit non hendrerit.</p>
+    </article>
+
+    <div class="instrucciones-caja">
+        <span class="instrucciones-titulo">💡 Comparador: Cara a cara político:</span>
+        <ul>
+            <li>Encuentra y selecciona a dos candidatos distintos para enfrentar sus historiales lado a lado. <strong>Puedes filtrar por partido para hallarlos más rápido.</strong></li>
+            <li><strong>Línea de tiempo:</strong> Las camisetas están ordenadas de izquierda a derecha, mostrando la más antigua primero y cerrando con su postulación para el 2026.</li>
+        </ul>
+    </div>
+    
+    <div class="anio-titulo">Comparador: El clóset de los 8,300 candidatos</div>
+    
+    <div class="comparator-wrapper">
+        <div class="comparator-column">
+            <div class="comparator-controls">
+                <select id="select-partido-1" class="ranking-dropdown comparator-select">
+                    <option value="">Todos los partidos</option>
+                </select>
+                <div class="input-group search-bar-group">
+                    <svg viewBox="0 0 24 24" class="search-icon" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="input-busqueda-1" placeholder="Buscar candidato 1..." autocomplete="off">
+                </div>
+            </div>
+            <div id="preselector-panel-1" class="preselector-container" style="display: none;"></div>
+            <div class="results-container" id="results-container-1"></div>
+        </div>
+
+        <div class="comparator-column">
+            <div class="comparator-controls">
+                <select id="select-partido-2" class="ranking-dropdown comparator-select">
+                    <option value="">Todos los partidos</option>
+                </select>
+                <div class="input-group search-bar-group">
+                    <svg viewBox="0 0 24 24" class="search-icon" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="input-busqueda-2" placeholder="Buscar candidato 2..." autocomplete="off">
+                </div>
+            </div>
+            <div id="preselector-panel-2" class="preselector-container" style="display: none;"></div>
+            <div class="results-container" id="results-container-2"></div>
+        </div>
+    </div>
+    
+    <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> Jurado Nacional de Elecciones (JNE)</div>
+
+    <article class="story-text">
+        <p>Pero el salto de partido en partido no siempre garantiza el triunfo. Al analizar el desempeño histórico de cada candidato que hoy postula, cruzando la cantidad de veces que tentó un cargo público contra las veces que resultó victorioso, el panorama revela quiénes son los verdaderos "eternos candidatos".</p>
+    </article>
+
+    <div class="instrucciones-caja">
+        <span class="instrucciones-titulo">💡 Cómo leer esta matriz de densidad:</span>
+        <ul>
+            <li><strong>El color es la clave:</strong> Las celdas más oscuras indican dónde hay una mayor concentración masiva de candidatos.</li>
+            <li><strong>Explora los cuadrantes:</strong> El eje inferior mide la cantidad de veces que postularon, y el eje lateral <strong>cuántas camisetas diferentes usaron en total.</strong> Pasa el cursor sobre cada celda para ver los detalles y ejemplos.</li>
+        </ul>
+    </div>
+    
+    <div class="anio-titulo">Fidelidad vs. Oportunismo: Camisetas y postulaciones</div>
+
+    <div class="ranking-filters-container">
+        <select id="heatmap-partido-select" class="ranking-dropdown">
+            <option value="ALL">Matriz General (Todos los partidos)</option>
+        </select>
+    </div>
+
+    <div class="heatmap-module">
+        <div class="heatmap-wrapper">
+            <div class="heatmap-y-labels">
+                <span>5 a más partidos</span>
+                <span>4 partidos</span>
+                <span>3 partidos</span>
+                <span>2 partidos</span>
+                <span>1 partido</span>
+            </div>
+            
+            <div id="heatmap-grid" class="heatmap-grid-container"></div>
+
+            <div class="heatmap-x-labels">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                <span>6</span><span>7</span><span>8</span><span>9</span><span>10+</span>
+                <div class="x-axis-title">Total de postulaciones en su historia (Incluye 2026)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> Procesamiento propio de ECData en base a Infogob</div>
+
+    <article class="story-text">
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ultricies justo ac justo sodales, ut facilisis lorem fermentum. Aenean dictum vitae nisi quis mollis.</p>
+    </article>
+
+    <div class="instrucciones-caja">
+        <span class="instrucciones-titulo">💡 Cómo leer esta línea de tiempo:</span>
+        <ul>
+            <li><strong>Vista general (Promedios):</strong> Cada punto representa el año promedio en el que los candidatos vigentes se afiliaron a su partido actual.</li>
+            <li><strong>Vista específica (El Enjambre):</strong> Usa el menú para seleccionar un partido y ver a cada uno de sus candidatos representados por un punto individual en su año de inscripción.</li>
+            <li><strong>La línea roja:</strong> Indica la fecha de cierre límite para inscribirse ("FECHA XXXX").</li>
+        </ul>
+    </div>
+
+    <div class="anio-titulo">Antigüedad partidaria: ¿Militantes históricos o recién llegados?</div>
+
+    <div class="ranking-filters-container">
+        <select id="timeline-partido-select" class="ranking-dropdown">
+            <option value="ALL">Vista General (Promedio por Partidos)</option>
+        </select>
+    </div>
+
+    <div class="timeline-module">
+        <div class="timeline-wrapper">
+            <canvas id="timeline-chart"></canvas>
+        </div>
+    </div>
+
+    <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> ROP (Jurado Nacional de Elecciones)</div>
+
+    <article class="story-text">
+        <p>Aenean dictum vitae nisi quis mollis. Donec congue mollis ullamcorper. Donec ut turpis aliquam, auctor magna et, viverra eros. Nam ullamcorper quis velit non hendrerit.</p>
+    </article>
+
+    <footer class="special-credits-black">    
+        <h3 class="credits-main-title">Créditos</h3>
+        
+        <div class="credit-block">
+            <span class="credit-role">Investigación y análisis de datos</span>
+            <span class="credit-name">Jorge Falen</span>
+        </div>
+        
+        <div class="credit-block">
+            <span class="credit-role">Texto</span>
+            <span class="credit-name">Jorge Falen, Gino Alva</span>
+        </div>
+        
+        <div class="credit-block">
+            <span class="credit-role">Diseño y desarrollo</span>
+            <span class="credit-name">Fabrizio Monge</span>
+        </div>
+        
+        <div class="credit-block">
+            <span class="credit-role">Asistencia de producción</span>
+            <span class="credit-name">Karla Kennedy</span>
+        </div>
+        
+        <div class="credit-block">
+            <span class="credit-role">Edición General</span>
+            <span class="credit-name">Ariana Lira</span>
+        </div>
+
+        <div class="credits-logo-container">
+            <img src="fotos/logo_ecdata.png" alt="Logo ECData" onerror="this.style.display='none'">
+            <div class="copyright-text">©2026 Empresa Editora El Comercio. Todos los derechos reservados</div>
+        </div>
+    </footer>
+    <script src="app.js"></script>
+</body>
+</html>
