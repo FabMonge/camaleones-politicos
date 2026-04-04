@@ -80,6 +80,7 @@ style.innerHTML = `
     z-index: 5;
 }
 
+
 /* AJUSTE EDITORA: Reducir de 3 a 2 columnas para el Ranking */
 #rankings-wrapper {
     display: grid !important;
@@ -88,6 +89,16 @@ style.innerHTML = `
     max-width: 800px !important;
     margin: 0 auto 30px auto !important;
 }
+
+/* Estructura para ordenar las camisetas en la tarjeta (Flex Wrap) */
+.history-section { margin-top: 15px; width: 100%; }
+.history-title { font-size: 12px; font-weight: bold; margin-bottom: 10px; color: #333; }
+.jersey-track { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; }
+.jersey-item { width: 65px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.jersey-placeholder { width: 45px; height: 45px; position: relative; margin-bottom: 4px; border: none; background: transparent; }
+.jersey-year { font-size: 11px; font-weight: bold; color: #111; }
+.jersey-party-name { font-size: 9px; color: #666; line-height: 1.1; margin-top: 2px; width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.jersey-role { font-size: 8px; color: #888; font-style: italic; margin-top: 2px; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 `;
 document.head.appendChild(style);
 
@@ -136,7 +147,6 @@ const extraerAnioInicial = (anioStr) => {
     return match ? parseInt(match[0]) : 0;
 };
 
-// FILTRO ANTI-FANTASMAS DE R
 const ensureArray = (data) => {
     if (!data || data === "NA") return [];
     let arr = Array.isArray(data) ? data : [data];
@@ -291,10 +301,11 @@ document.addEventListener('click', (e) => {
 // FASE 1: RANKINGS DINÁMICOS Y FILTRADOS
 // ===============================================
 function calcularRankings(candidatos, partidoFiltro = "ALL") {
+    // 'pool' es la lista filtrada por el dropdown (afectará a la columna 1)
     let pool = candidatos;
     if (partidoFiltro !== "ALL") pool = candidatos.filter(c => c.partidoActual === partidoFiltro);
 
-    // RANKING 1: Cambios de Camiseta
+    // RANKING 1: Cambios de Camiseta (Afectado por el dropdown)
     let rankingCamisetas = pool.map(c => {
         let historialSeguro = ensureArray(c.historialElectoral);
         let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
@@ -303,26 +314,38 @@ function calcularRankings(candidatos, partidoFiltro = "ALL") {
         return { ...c, metrica: uniqueParties.size };
     }).sort((a, b) => b.metrica - a.metrica).slice(0, 5);
 
-    // RANKING 2: ETERNOS PERDEDORES (LÓGICA CORREGIDA)
-    let rankingDerrotas = pool.map(c => {
+    // RANKING 2: PARTIDOS CON MÁS CAMALEONES (SIEMPRE GLOBAL)
+    const conteoPartidos = {};
+    
+    // Usamos 'candidatos' originales en lugar de 'pool' para que NO le afecte el dropdown
+    candidatos.forEach(c => {
         let historialSeguro = ensureArray(c.historialElectoral);
-        
-        // Verificamos si alguna vez ganó una elección en el pasado
-        let victorias = historialSeguro.filter(h => h.elegido && h.elegido.toUpperCase() === "SI").length;
-        
-        // Si tiene al menos 1 victoria, queda descalificado del ranking (métrica = 0)
-        // Si tiene 0 victorias, sumamos cuántas veces ha participado en total (todas fueron derrotas)
-        let metricaEternoPerdedor = (victorias > 0) ? 0 : historialSeguro.length;
-        
-        return { ...c, metrica: metricaEternoPerdedor };
-    })
-    .filter(c => c.metrica > 0) // Excluimos a los que tienen 0 intentos pasados (primerizos) o descalificados
-    .sort((a, b) => b.metrica - a.metrica)
-    .slice(0, 5);
+        let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
+        if (c.partidoActual) partidosUsados.push(c.partidoActual);
+        let uniqueParties = new Set(partidosUsados);
+        if (uniqueParties.size > 1) {
+            conteoPartidos[c.partidoActual] = (conteoPartidos[c.partidoActual] || 0) + 1;
+        }
+    });
+
+    // Convertimos el conteo de partidos en un formato que la tarjeta entienda
+    let rankingPartidos = Object.entries(conteoPartidos)
+        .map(([nombrePartido, cantidad]) => {
+            const idPart = normalizarId(nombrePartido);
+            const logoPartido = diccionarioPartidos[idPart] ? diccionarioPartidos[idPart].logo : null;
+            return {
+                nombre: nombrePartido,
+                metrica: cantidad,
+                partidoActual: null, // Lo dejamos en null para que no dibuje la medallita superpuesta redundante
+                idFoto: logoPartido  // Mandamos el logo del partido para que lo dibuje en el círculo grande
+            };
+        })
+        .sort((a, b) => b.metrica - a.metrica)
+        .slice(0, 5);
 
     return [
-        { titulo: "Top 5 con más cambios de camiseta para postular", data: rankingCamisetas, label: "franquicias" },
-        { titulo: "Top 5 que postularon más veces sin éxito", data: rankingDerrotas, label: "derrotas" }
+        { titulo: "Top 5 con más cambios de camiseta", data: rankingCamisetas, label: "franquicias" },
+        { titulo: "Partidos con más camaleones", data: rankingPartidos, label: "candidatos" }
     ];
 }
 
@@ -418,13 +441,15 @@ function generarRopaHTML(historial, tipoRopa) {
             logoImg = `<img src="${getUrlImagen(infoPart.logo)}" style="${estiloLogo}" onerror="this.style.display='none'"/>`;
         }
 
+        const anioLimpio = extraerAnioInicial(h.anio) || h.anio || 'N/A';
+
         return `
         <div class="jersey-item">
             <div class="jersey-placeholder" style="position: relative; background: transparent; border: none; box-shadow: none;">
                 ${imgRopaBase}
                 ${logoImg}
             </div>
-            <div class="jersey-year">${h.anio || 'N/A'}</div>
+            <div class="jersey-year">${anioLimpio}</div>
             <div class="jersey-party-name">${h.partido || 'Desconocido'}</div>
             <div class="jersey-role">${h.rol || ''}</div>
         </div>
@@ -461,6 +486,11 @@ function renderTarjetaCandidato(candidato, containerId) {
 
     let camElectorales = generarRopaHTML(historialElectoralOrdenado, 'camiseta.png');
 
+    // Calcular número total de camisetas políticas únicas
+    let pSet = new Set(historialElectoralSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean));
+    if (pActual) pSet.add(pActual);
+    let totalCamisetas = pSet.size;
+
     const html = `
         <div class="candidate-card" style="border-top-color: ${colorPartido}">
             <div class="card-header-flex">
@@ -474,15 +504,22 @@ function renderTarjetaCandidato(candidato, containerId) {
             </div>
             
             <div class="histories-container">
-                <div class="history-section" style="width: 100%;">
+                <div class="history-section">
                     <div class="history-title">Postulaciones (Orden cronológico)</div>
                     <div class="jersey-track">${camElectorales}</div>
                 </div>
+            </div>
+
+            <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #ddd; font-size: 13px; text-align: center; color: #444; font-weight: bold;">
+                Este candidato tuvo ${totalCamisetas} camiseta(s) política(s).
             </div>
         </div>
     `;
     container.innerHTML = html;
 }
+
+
+
 
 function setupBuscadorComparador(inputId, selectId, panelId, resultId) {
     const input = document.getElementById(inputId);
@@ -680,15 +717,15 @@ const deadlinePlugin = {
 };
 if (typeof Chart !== 'undefined') Chart.register(deadlinePlugin);
 
+
+// ESTA ES LA FUNCIÓN CLAVE CORREGIDA 
 function extractAffiliationTimestamp(candidato) {
-    if (!candidato.partidoActual) return null;
-    
     let historialSeguro = ensureArray(candidato.historialPartidario);
     if (historialSeguro.length === 0) return null;
 
-    const activeAffiliation = historialSeguro.find(h =>
-        h.partido === candidato.partidoActual && h.anio && h.anio.includes("Act.")
-    );
+    // Busca específicamente el registro con "anio": "Vigente"
+    const activeAffiliation = historialSeguro.find(h => h.anio === "Vigente");
+    
     if (activeAffiliation && activeAffiliation.fechaInicio) {
         const parts = activeAffiliation.fechaInicio.split('/');
         if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
@@ -709,7 +746,9 @@ function renderTimeline(candidatos, partidoFiltro = "ALL") {
 
     let datasets = [];
     
-    const minYearScale = (partidoFiltro === "ALL") ? new Date(2020, 0, 1).getTime() : new Date(2000, 0, 1).getTime();
+    // Rango extendido para que no queden fuera afiliados de años como 2005 o 2006. 
+    // Fijo para que sirva de escala general de comparación.
+    const minYearScale = new Date(2000, 0, 1).getTime();
 
     if (partidoFiltro === "ALL") {
         const partyStats = {};
