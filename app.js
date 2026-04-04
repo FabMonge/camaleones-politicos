@@ -1,686 +1,849 @@
-// Variable global y Panel de Configuración Modular
-const esMovil = window.innerWidth <= 768;
-
+// ===============================================
+// CONFIGURACIÓN MACRO (ARQUITECTURA)
+// ===============================================
 const CONFIG = {
-    archivos: {
-        regiones: "Ganadores_elecciones.csv",
-        nacion: "Resumen_eleccion_nacion.csv"
-    },
-    animacion: {
-        velocidad: 3000
-    },
     colores: {
-        defecto: "#eeeeee",
-        macro: {
-            "ORIENTE": "#0047ab",
-            "NORTE": "#E53935",
-            "CENTRO": "#4caf50",
-            "SUR": "#9b59b6",
-            "LIMA Y CALLAO": "#f1c40f"
+        partidos: {
+            "FUERZA POPULAR": "#F39C12",
+            "RENOVACION POPULAR": "#2980B9",
+            "PERU LIBRE": "#C0392B",
+            "AHORA NACION - AN": "#8E44AD",
+            "ALIANZA PARA EL PROGRESO": "#27AE60",
+            "DEFECTO": "#95A5A6"
         }
+    },
+    filtros: {
+        // Todo partido en esta lista será invisible en la web, pero seguirá existiendo en el JSON
+        partidosOcultosVisualmente: [
+            "PARTIDO CIUDADANOS POR EL PERU"
+        ]
+    },
+    archivos: {
+        masterJSON: "Data_lista/candidatos_super_master.json",
+        partidosJSON: "Data_lista/diccionario_partidos.json" 
+    },
+    rutas: {
+        baseFotos: "fotos/",
     }
+};
+
+let todosLosCandidatos = [];
+let diccionarioPartidos = {}; 
+let timelineChartInstance = null; 
+
+// ===============================================
+// INYECCIÓN AUTOMÁTICA DE CSS (AJUSTES UI)
+// ===============================================
+const style = document.createElement('style');
+style.innerHTML = `
+/* Selectores Premium */
+.custom-select-wrapper { position: relative; display: inline-block; user-select: none; font-family: inherit; vertical-align: middle; max-width: 100%; }
+.custom-select-trigger { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: #fff; border: 1px solid #ccc; border-radius: 6px; cursor: pointer; font-size: 14px; color: #333; min-height: 38px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.custom-select-trigger .c-text { display: flex; align-items: center; font-weight: 500; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.custom-select-trigger .c-arrow { font-size: 10px; color: #888; margin-left: 10px; flex-shrink: 0; }
+.c-logo { width: 20px; height: 20px; object-fit: contain; margin-right: 8px; flex-shrink: 0; }
+.c-icon-placeholder { width: 20px; height: 20px; margin-right: 8px; background: transparent; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+.custom-select-options { position: absolute; top: 100%; left: 0; right: 0; margin-top: 5px; background-color: #fff; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 999; max-height: 250px; overflow-y: auto; display: none; min-width: 100%; }
+.custom-select-options.open { display: block; }
+.custom-option { display: flex; align-items: center; padding: 10px 12px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f9f9f9; transition: background 0.2s; }
+.custom-option:hover { background-color: #f1f1f1; }
+
+/* Borde Gris Sutil y Eliminación de Anillos en Rankings */
+.ranking-column { border-top: none !important; }
+.chameleon-top { 
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important; 
+    background-color: #fff !important;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+.chameleon-top .photo, 
+.chameleon-top .photo img {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Escudo de Partido en el Avatar (Burbujas) */
+.party-badge-mini {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 35%;
+    height: 35%;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background-color: #fff;
+    object-fit: contain;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    z-index: 5;
+}
+
+/* AJUSTE EDITORA: Reducir de 3 a 2 columnas para el Ranking */
+#rankings-wrapper {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 30px !important;
+    max-width: 800px !important;
+    margin: 0 auto 30px auto !important;
+}
+`;
+document.head.appendChild(style);
+
+// ===============================================
+// UTILIDADES COMUNES
+// ===============================================
+const getInitials = (name) => {
+    if (!name) return "?";
+    let parts = name.split(' ').filter(n => n.length > 0);
+    if(parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0] ? parts[0][0].toUpperCase() : "?";
+};
+
+const normalizarId = (str) => {
+    if (!str) return "defecto";
+    return str.toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/[^a-z0-9]/g, '_')
+              .replace(/_+/g, '_')
+              .replace(/_$/g, '');
+};
+
+function hexToRgba(hex, alpha) {
+    let c;
+    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+        c= hex.substring(1).split('');
+        if(c.length== 3){
+            c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+        }
+        c= '0x'+c.join('');
+        return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')';
+    }
+    return `rgba(149, 165, 166, ${alpha})`;
+}
+
+const getUrlImagen = (nombreArchivo) => {
+    if (!nombreArchivo) return "";
+    const tieneExtension = /\.(png|jpg|jpeg|webp)$/i.test(nombreArchivo);
+    return `${CONFIG.rutas.baseFotos}${encodeURI(nombreArchivo)}${tieneExtension ? '' : '.png'}`;
+};
+
+const extraerAnioInicial = (anioStr) => {
+    if (!anioStr) return 0;
+    const match = String(anioStr).match(/\d{4}/);
+    return match ? parseInt(match[0]) : 0;
+};
+
+// FILTRO ANTI-FANTASMAS DE R
+const ensureArray = (data) => {
+    if (!data || data === "NA") return [];
+    let arr = Array.isArray(data) ? data : [data];
+    return arr.filter(item => item && typeof item === 'object' && item.partido && String(item.partido).trim() !== "" && item.partido !== "NA");
 };
 
 // ===============================================
-// BLOQUE 1: MAPA PRINCIPAL INTERACTIVO (FASE 1)
+// INICIALIZACIÓN
 // ===============================================
+document.addEventListener("DOMContentLoaded", initApp);
 
-const map = L.map('map', {
-    zoomControl: false, dragging: false, scrollWheelZoom: false,
-    doubleClickZoom: false, touchZoom: false, attributionControl: false, zoomSnap: 0 
-}).setView(
-    esMovil ? [-12.0, -75.0] : [-10.0, -76.5], 
-    esMovil ? 4.4 : 5.55                     
-);
+async function initApp() {
+    try {
+        const [resCand, resPart] = await Promise.all([
+            fetch(CONFIG.archivos.masterJSON),
+            fetch(CONFIG.archivos.partidosJSON).catch(() => ({ ok: false })) 
+        ]);
 
-let elecciones = {}, periodos = [], currentIndex = 0;
-let geoJsonLayer, callaoInset, pexLayer;
-let timerInterval, isPlaying = true;
-
-const excepcionesLocales = {
-    "1980 - 1ra Vuelta": { "PUNO": "Roger Cáceres" },
-    "2016 - 1ra Vuelta": { "CAJAMARCA": "Gregorio Santos" },
-    "2021 - 1ra Vuelta": { "LA LIBERTAD": "César Acuña" } 
-};
-
-const notasHistoricas = {
-    "1980 - 1ra Vuelta": { 
-        "UCAYALI": "La región fue creada en junio de 1980, luego de esta elección, antes formaba parte de Loreto." 
-    }
-};
-
-const generarLabel = (anio, vueltaStr) => {
-    const tipoVuelta = String(vueltaStr).toLowerCase().includes('prim') ? '1ra Vuelta' : '2da Vuelta';
-    return `${String(anio).trim()} - ${tipoVuelta}`;
-};
-
-const getStyle = (name) => {
-    const n = name ? name.toUpperCase().trim() : "";
-    const elec = elecciones[periodos[currentIndex]];
-    const fillColor = (elec && elec.mapa[n]) ? elec.mapa[n].color : CONFIG.colores.defecto;
-    return { fillColor: fillColor, weight: 0.8, opacity: 1, color: "#444444", fillOpacity: 1 };
-};
-
-function onEachFeature(feature, layer) {
-    let n = feature?.properties?.NOMBDEP ? feature.properties.NOMBDEP.toUpperCase().trim() : "CALLAO";
-    let anioActual = periodos[currentIndex];
-    
-    if (notasHistoricas[anioActual] && notasHistoricas[anioActual][n]) {
-        layer.bindPopup(`
-            <div class="popup-region">${n}</div>
-            <div class="popup-historical-note">${notasHistoricas[anioActual][n]}</div>
-        `, { closeButton: false });
-        return; 
-    }
-
-    let currentElec = elecciones[anioActual];
-    if (currentElec && currentElec.mapa[n]) {
-        let d = currentElec.mapa[n];
-        let textoLocalHtml = "";
+        const datosCrudos = await resCand.json();
         
-        if (excepcionesLocales[anioActual] && excepcionesLocales[anioActual][n]) {
-            textoLocalHtml = `<div class="popup-local-winner">${excepcionesLocales[anioActual][n]}</div>`;
-        }
+        // FILTRO VISUAL
+        todosLosCandidatos = datosCrudos.filter(c => !CONFIG.filtros.partidosOcultosVisualmente.includes(c.partidoActual));
+        
+        if (resPart.ok) diccionarioPartidos = await resPart.json();
 
-        layer.bindPopup(`
-            <div class="popup-region">${n}</div>
-            ${textoLocalHtml}
-            <div class="popup-party">${d.partido}</div>
-            <div class="popup-pct">${d.pct} <span class="popup-pct-label">(votos válidos)</span></div>
-        `, { closeButton: false });
+        const partidosSet = new Set();
+        todosLosCandidatos.forEach(c => { if(c.partidoActual) partidosSet.add(c.partidoActual); });
+        const partidosUnicos = Array.from(partidosSet).sort();
+
+        const cargosSet = new Set();
+        todosLosCandidatos.forEach(c => {
+            if(Array.isArray(c.cargos)) c.cargos.forEach(cg => cargosSet.add(cg));
+            else if(c.cargo) cargosSet.add(c.cargo);
+        });
+        const cargosUnicos = Array.from(cargosSet).sort();
+
+        // 1. Ranking 
+        const selectRankings = document.getElementById('ranking-partido-select');
+        if(selectRankings) {
+            populateSelects('ranking-partido-select', partidosUnicos, 'partido');
+            selectRankings.addEventListener('change', (e) => renderRankings(calcularRankings(todosLosCandidatos, e.target.value), e.target.value));
+        }
+        renderRankings(calcularRankings(todosLosCandidatos, "ALL"), "ALL");
+
+        // 2. Comparador
+        populateSelects('select-partido-1', partidosUnicos, 'partido');
+        populateSelects('select-partido-2', partidosUnicos, 'partido');
+        populateSelects('select-cargo-1', cargosUnicos, 'cargo'); 
+        populateSelects('select-cargo-2', cargosUnicos, 'cargo');
+        
+        setupBuscadorComparador('input-busqueda-1', 'select-partido-1', 'preselector-panel-1', 'results-container-1');
+        setupBuscadorComparador('input-busqueda-2', 'select-partido-2', 'preselector-panel-2', 'results-container-2');
+        renderTarjetaCandidato(null, 'results-container-1');
+        renderTarjetaCandidato(null, 'results-container-2');
+
+        // 3. Heatmap
+        const selectHeatmap = document.getElementById('heatmap-partido-select');
+        if(selectHeatmap) {
+            populateSelects('heatmap-partido-select', partidosUnicos, 'partido');
+            selectHeatmap.addEventListener('change', (e) => renderHeatmap(todosLosCandidatos, e.target.value));
+        }
+        renderHeatmap(todosLosCandidatos, "ALL");
+
+        // 4. Timeline
+        const selectTimeline = document.getElementById('timeline-partido-select');
+        if(selectTimeline) {
+            populateSelects('timeline-partido-select', partidosUnicos, 'partido');
+            selectTimeline.addEventListener('change', (e) => renderTimeline(todosLosCandidatos, e.target.value));
+        }
+        renderTimeline(todosLosCandidatos, "ALL");
+
+    } catch (error) {
+        console.error("Fallo al cargar datos:", error);
     }
 }
 
-function createCard(cand, anio) {
-    if (!cand || !cand.nombre) return '';
-    const bgImage = `background-image: url('fotos/${cand.idFoto}_${anio}.png'), url('fotos/${cand.idFoto}.png'); background-size: cover; background-position: center center;`;
-    const dotHtml = cand.color ? `<div class="dot" style="background:${cand.color};"></div>` : '';
+// ===============================================
+// CONSTRUCTOR DE SELECTORES
+// ===============================================
+function populateSelects(id, options, tipo = "partido") {
+    const nativeSelect = document.getElementById(id);
+    if(!nativeSelect) return;
 
-    return `
-        <div class="photo" style="${bgImage}"></div>
-        <div class="cand-info-container">
-            <span class="cand-name">${cand.nombre}</span>
-            <span class="cand-party">${cand.partido}</span>
-            <div class="cand-pct">
-                ${dotHtml}
-                <span>${cand.pct}</span>
+    nativeSelect.innerHTML = `<option value="ALL">Todos los ${tipo === 'cargo' ? 'cargos' : 'partidos'}</option>`;
+    options.forEach(opt => nativeSelect.innerHTML += `<option value="${opt}">${opt}</option>`);
+    nativeSelect.style.display = 'none';
+
+    if(nativeSelect.nextElementSibling && nativeSelect.nextElementSibling.classList.contains('custom-select-wrapper')) {
+        nativeSelect.nextElementSibling.remove();
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select-wrapper';
+    
+    const isComparador = id.includes('select-partido-1') || id.includes('select-partido-2') || id.includes('select-cargo');
+    wrapper.style.width = isComparador ? '100%' : '450px'; 
+    wrapper.style.minWidth = isComparador ? 'auto' : '450px';
+
+    const renderContent = (valor, etiqueta) => {
+        if (tipo === 'cargo') return `<span>${etiqueta}</span>`;
+        if (valor === 'ALL') return `<span style="font-weight: bold;">${etiqueta}</span>`;
+        
+        const idPart = normalizarId(valor);
+        const infoPart = diccionarioPartidos[idPart];
+        const logoUrl = (infoPart && infoPart.logo) ? getUrlImagen(infoPart.logo) : '';
+        
+        const imgHtml = logoUrl ? `<img src="${logoUrl}" class="c-logo" onerror="this.outerHTML='<div class=\\'c-icon-placeholder\\'></div>'" />` : `<div class="c-icon-placeholder"></div>`;
+        return `${imgHtml} <span>${etiqueta}</span>`;
+    };
+
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger';
+    trigger.innerHTML = `<span class="c-text">${renderContent('ALL', `Todos los ${tipo === 'cargo' ? 'cargos' : 'partidos'}`)}</span> <span class="c-arrow">▼</span>`;
+
+    const optionsPanel = document.createElement('div');
+    optionsPanel.className = 'custom-select-options';
+
+    const createOption = (valor, etiqueta) => {
+        const optDiv = document.createElement('div');
+        optDiv.className = 'custom-option';
+        optDiv.innerHTML = renderContent(valor, etiqueta);
+        optDiv.addEventListener('click', () => {
+            trigger.querySelector('.c-text').innerHTML = optDiv.innerHTML;
+            nativeSelect.value = valor;
+            nativeSelect.dispatchEvent(new Event('change')); 
+            optionsPanel.classList.remove('open');
+        });
+        optionsPanel.appendChild(optDiv);
+    };
+
+    createOption('ALL', `Todos los ${tipo === 'cargo' ? 'cargos' : 'partidos'}`);
+    options.forEach(opt => createOption(opt, opt));
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.custom-select-options').forEach(p => { if(p !== optionsPanel) p.classList.remove('open'); });
+        optionsPanel.classList.toggle('open');
+    });
+
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(optionsPanel);
+    nativeSelect.parentNode.insertBefore(wrapper, nativeSelect.nextSibling);
+}
+
+document.addEventListener('click', (e) => {
+    if(!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-options').forEach(p => p.classList.remove('open'));
+    }
+});
+
+// ===============================================
+// FASE 1: RANKINGS DINÁMICOS Y FILTRADOS
+// ===============================================
+function calcularRankings(candidatos, partidoFiltro = "ALL") {
+    let pool = candidatos;
+    if (partidoFiltro !== "ALL") pool = candidatos.filter(c => c.partidoActual === partidoFiltro);
+
+    // RANKING 1: Cambios de Camiseta
+    let rankingCamisetas = pool.map(c => {
+        let historialSeguro = ensureArray(c.historialElectoral);
+        let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
+        if(c.partidoActual) partidosUsados.push(c.partidoActual);
+        let uniqueParties = new Set(partidosUsados);
+        return { ...c, metrica: uniqueParties.size };
+    }).sort((a, b) => b.metrica - a.metrica).slice(0, 5);
+
+    // RANKING 2: ETERNOS PERDEDORES (LÓGICA CORREGIDA)
+    let rankingDerrotas = pool.map(c => {
+        let historialSeguro = ensureArray(c.historialElectoral);
+        
+        // Verificamos si alguna vez ganó una elección en el pasado
+        let victorias = historialSeguro.filter(h => h.elegido && h.elegido.toUpperCase() === "SI").length;
+        
+        // Si tiene al menos 1 victoria, queda descalificado del ranking (métrica = 0)
+        // Si tiene 0 victorias, sumamos cuántas veces ha participado en total (todas fueron derrotas)
+        let metricaEternoPerdedor = (victorias > 0) ? 0 : historialSeguro.length;
+        
+        return { ...c, metrica: metricaEternoPerdedor };
+    })
+    .filter(c => c.metrica > 0) // Excluimos a los que tienen 0 intentos pasados (primerizos) o descalificados
+    .sort((a, b) => b.metrica - a.metrica)
+    .slice(0, 5);
+
+    return [
+        { titulo: "Top 5 con más cambios de camiseta para postular", data: rankingCamisetas, label: "franquicias" },
+        { titulo: "Top 5 que postularon más veces sin éxito", data: rankingDerrotas, label: "derrotas" }
+    ];
+}
+
+function renderRankings(rankingsData, partidoFiltro = "ALL") {
+    const wrapper = document.getElementById('rankings-wrapper');
+    if(!wrapper) return;
+
+    let html = '';
+
+    rankingsData.forEach(ranking => {
+        if(ranking.data.length === 0) {
+            html += `<div class="ranking-column" style="border-top: none !important;"><div class="ranking-header">${ranking.titulo}</div><p style="color:#888; font-size:13px; text-align:center; padding:20px;">Sin datos o nadie cumple el criterio</p></div>`;
+            return;
+        }
+
+        const top1 = ranking.data[0];
+        const resto = ranking.data.slice(1); 
+        
+        const fotoTop1 = top1.idFoto ? `<img src="${getUrlImagen(top1.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${getInitials(top1.nombre)}'"/>` : getInitials(top1.nombre);
+
+        let badgeTop1 = '';
+        if(top1.partidoActual) {
+            const idPart = normalizarId(top1.partidoActual);
+            if(diccionarioPartidos[idPart]?.logo) {
+                badgeTop1 = `<img src="${getUrlImagen(diccionarioPartidos[idPart].logo)}" class="party-badge-mini" onerror="this.style.display='none'"/>`;
+            }
+        }
+
+        let colHtml = `
+            <div class="ranking-column" style="border-top: none !important;">
+                <div class="ranking-header">${ranking.titulo}</div>
+                <div class="chameleon-top">
+                    <div class="photo" style="position: relative; background-color: #eee; display: flex; align-items: center; justify-content: center;">
+                        ${fotoTop1}
+                        ${badgeTop1}
+                    </div>
+                    <div class="chameleon-name">${top1.nombre}</div>
+                    <div class="chameleon-metric"><span>${top1.metrica}</span> ${ranking.label}</div>
+                </div>
+                <div class="chameleon-list">
+        `;
+
+        resto.forEach((cand, index) => {
+            const fotoResto = cand.idFoto ? `<img src="${getUrlImagen(cand.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${getInitials(cand.nombre)}'"/>` : getInitials(cand.nombre);
+            
+            let badgeResto = '';
+            if(cand.partidoActual) {
+                const idPart = normalizarId(cand.partidoActual);
+                if(diccionarioPartidos[idPart]?.logo) {
+                    badgeResto = `<img src="${getUrlImagen(diccionarioPartidos[idPart].logo)}" class="party-badge-mini" onerror="this.style.display='none'"/>`;
+                }
+            }
+
+            colHtml += `
+                <div class="chameleon-item">
+                    <div class="pos">${index + 2}</div>
+                    <div class="photo" style="position: relative; background-color: #eee; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; color: #555;">
+                        ${fotoResto}
+                        ${badgeResto}
+                    </div>
+                    <div class="info">
+                        <div class="name">${cand.nombre}</div>
+                        <div class="metric">${cand.metrica} ${ranking.label}</div>
+                    </div>
+                </div>
+            `;
+        });
+        colHtml += `</div></div>`;
+        html += colHtml;
+    });
+    wrapper.innerHTML = html;
+}
+
+// ===============================================
+// FASE 2: COMPARADOR CARA A CARA
+// ===============================================
+function generarRopaHTML(historial, tipoRopa) {
+    if (!historial || historial.length === 0) {
+        return `<p style="text-align:left; font-size:14px; color:#888; padding: 10px 0; margin:0; font-style: italic;">Sin registros previos.</p>`;
+    }
+    
+    return historial.map(h => {
+        const idPart = normalizarId(h.partido);
+        const infoPart = diccionarioPartidos[idPart];
+        
+        const imgRopaBase = `<img src="${CONFIG.rutas.baseFotos}${tipoRopa}" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; z-index: 1;" onerror="this.style.display='none'"/>`;
+
+        let logoImg = '';
+        if (infoPart && infoPart.logo) {
+            const estiloLogo = tipoRopa === 'camiseta.png' 
+                ? 'width: 16px; height: 16px; position: absolute; top: 25%; right: 25%; z-index: 2; object-fit: contain;' 
+                : 'width: 14px; height: 14px; position: absolute; bottom: 20%; left: 30%; z-index: 2; object-fit: contain;';
+            logoImg = `<img src="${getUrlImagen(infoPart.logo)}" style="${estiloLogo}" onerror="this.style.display='none'"/>`;
+        }
+
+        return `
+        <div class="jersey-item">
+            <div class="jersey-placeholder" style="position: relative; background: transparent; border: none; box-shadow: none;">
+                ${imgRopaBase}
+                ${logoImg}
+            </div>
+            <div class="jersey-year">${h.anio || 'N/A'}</div>
+            <div class="jersey-party-name">${h.partido || 'Desconocido'}</div>
+            <div class="jersey-role">${h.rol || ''}</div>
+        </div>
+        `;
+    }).join('');
+}
+
+function renderTarjetaCandidato(candidato, containerId) {
+    const container = document.getElementById(containerId);
+    if(!container) return;
+
+    if (!candidato) {
+        container.innerHTML = `<div style="background:#f9f9f9; border: 1px dashed #ccc; padding:40px 20px; text-align:center; border-radius:6px; color:#888;">Utiliza el buscador superior para seleccionar a un candidato y ver su historial aquí.</div>`;
+        return;
+    }
+
+    let pActual = candidato.partidoActual || "INDEPENDIENTE";
+    let colorPartido = CONFIG.colores.partidos[pActual] || CONFIG.colores.partidos["DEFECTO"];
+    let iniciales = getInitials(candidato.nombre);
+    
+    let fotoPerfil = candidato.idFoto ? `<img src="${getUrlImagen(candidato.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${iniciales}'"/>` : iniciales;
+    
+    let cargosLabel = Array.isArray(candidato.cargos) ? candidato.cargos.join(' / ') : (candidato.cargos || '');
+
+    const postulacion2026 = {
+        anio: "2026",
+        partido: pActual,
+        rol: cargosLabel || "Candidato"
+    };
+
+    let historialElectoralSeguro = ensureArray(candidato.historialElectoral);
+    let historialElectoralOrdenado = historialElectoralSeguro.slice().sort((a, b) => extraerAnioInicial(a.anio) - extraerAnioInicial(b.anio));
+    historialElectoralOrdenado.push(postulacion2026); 
+
+    let camElectorales = generarRopaHTML(historialElectoralOrdenado, 'camiseta.png');
+
+    const html = `
+        <div class="candidate-card" style="border-top-color: ${colorPartido}">
+            <div class="card-header-flex">
+                <div class="avatar-initials" style="color: ${colorPartido}; background-color: ${colorPartido}20; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    ${fotoPerfil}
+                </div>
+                <div class="card-info">
+                    <div class="card-name">${candidato.nombre || 'Desconocido'}</div>
+                    <div class="card-current-party">Postula por: ${pActual} <br> <span style="font-size:11px; color:#888;">${cargosLabel ? `(${cargosLabel})` : ''}</span></div>
+                </div>
+            </div>
+            
+            <div class="histories-container">
+                <div class="history-section" style="width: 100%;">
+                    <div class="history-title">Postulaciones (Orden cronológico)</div>
+                    <div class="jersey-track">${camElectorales}</div>
+                </div>
             </div>
         </div>
     `;
+    container.innerHTML = html;
 }
 
-function updateLegend() {
-    const currentData = elecciones[periodos[currentIndex]];
-    if (!currentData) return;
-    const anioActual = periodos[currentIndex].split(' - ')[0];
-    
-    document.getElementById("cand-1").innerHTML = currentData.candidatos[0] ? createCard(currentData.candidatos[0], anioActual) : '';
-    document.getElementById("cand-2").innerHTML = currentData.candidatos[1] ? createCard(currentData.candidatos[1], anioActual) : '';
-    
-    const bottom = document.getElementById("bottom-candidates");
-    bottom.innerHTML = currentData.candidatos.slice(2).reduce((html, cand) => {
-        if (!cand) return html;
-        return html + `<div class="candidate-small">${createCard(cand, anioActual)}</div>`;
-    }, "");
-}
+function setupBuscadorComparador(inputId, selectId, panelId, resultId) {
+    const input = document.getElementById(inputId);
+    const select = document.getElementById(selectId);
+    const panel = document.getElementById(panelId);
+    let timeout;
 
-// Inicialización de datos con manejador de errores
-Promise.all([
-    new Promise(res => Papa.parse(CONFIG.archivos.regiones, { download: true, header: true, skipEmptyLines: true, delimiter: ";", transformHeader: h => h.replace(/^\uFEFF/, '').trim().toLowerCase(), complete: res })),
-    new Promise(res => Papa.parse(CONFIG.archivos.nacion, { download: true, header: true, skipEmptyLines: true, delimiter: ";", transformHeader: h => h.replace(/^\uFEFF/, '').trim().toLowerCase(), complete: res }))
-]).then(results => {
-    const [regionesData, nacionData] = results;
+    if(!input || !select || !panel) return;
 
-    nacionData.data.forEach(row => {
-        const anio = row['año'] || row['ano'] || Object.values(row)[0];
-        const puestoRaw = (row['puesto'] || "").toUpperCase().trim();
-        if (!anio || !row['vuelta'] || !row['candidato'] || !puestoRaw) return; 
-
-        const label = generarLabel(anio, row['vuelta']);
-        if (!elecciones[label]) elecciones[label] = { mapa: {}, candidatos: [] };
-
-        const nombreLimpio = row['candidato'].trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\./g, '').replace(/\s+/g, '_');
-        const idx = ['PRIMERO', 'SEGUNDO', 'TERCERO', 'CUARTO'].indexOf(puestoRaw);
+    const ejecutarBusqueda = () => {
+        const val = input.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const partidoFiltro = select.value;
         
-        if (idx !== -1) {
-            elecciones[label].candidatos[idx] = { 
-                nombre: row['candidato'].trim(), 
-                partido: (row['organización política'] || row['organizacion politica'] || "").trim(), 
-                pct: row['%_votos_validos'] || "", 
-                color: (row['color'] || "").trim(),
-                idFoto: nombreLimpio
-            };
-        }
-    });
-
-    regionesData.data.forEach(row => {
-        const anio = row['año'] || row['ano'] || Object.values(row)[0];
-        let region = row["distrito electoral"];
-        if (!anio || !row['vuelta'] || !region) return; 
-
-        const label = generarLabel(anio, row['vuelta']);
-        if (!elecciones[label]) elecciones[label] = { mapa: {}, candidatos: [] };
-        
-        region = region.toUpperCase().trim();
-        if (region.includes("EXTRANJERO")) region = "EXTRANJERO";
-
-        elecciones[label].mapa[region] = { 
-            color: (row['color'] || "").trim() || CONFIG.colores.defecto, 
-            partido: (row["organización política"] || row["organizacion politica"] || "").trim(), 
-            pct: row["%_votos_validos"] || "" 
-        };
-    });
-
-    periodos = Object.keys(elecciones).sort();
-    if (periodos.length === 0) return document.getElementById("year-display").innerText = "Error CSV";
-
-    fetch("mapa.geojson?v=" + Date.now()).then(res => res.json()).then(data => {
-        geoJsonLayer = L.geoJSON(data, { style: f => getStyle(f.properties.NOMBDEP), onEachFeature: onEachFeature }).addTo(map);
-
-        const callaoF = data.features.find(f => f.properties.NOMBDEP === "CALLAO");
-        if (callaoF) {
-            let callaoGeom = JSON.parse(JSON.stringify(callaoF.geometry));
-            const shift = [-82.5, -11.5], scale = 12, center = [-77.12, -12.05];
-            callaoGeom.coordinates = (function transform(coords) { return Array.isArray(coords[0]) ? coords.map(transform) : [shift[0] + (coords[0] - center[0]) * scale, shift[1] + (coords[1] - center[1]) * scale]; })(callaoGeom.coordinates);
-            callaoInset = L.geoJSON(callaoGeom, { style: getStyle("CALLAO"), onEachFeature: onEachFeature }).addTo(map);
-            L.polyline([[-10.8, -82.2], [-12.05, -77.50]], { color: "#444", weight: 1.2, dashArray: "5, 5" }).addTo(map);
-            L.marker([-8.5, -82.75], { icon: L.divIcon({ className: 'pex-label', html: 'CALLAO', iconSize: [100, 20], iconAnchor: [50, 10] }), interactive: false }).addTo(map);
+        if (!val || val.length < 3) {
+            panel.style.display = "none";
+            return;
         }
 
-        const coordMundito = esMovil ? [-17.5, -81.5] : [-16.0, -81.5]; 
-        const coordPopupMundito = esMovil ? [-18.2, -81.5] : [-14.7, -81.5];
+        const terminosBusqueda = val.split(/\s+/);
 
-        pexLayer = L.marker(coordMundito, { icon: L.divIcon({ className: 'pex-globe-container', html: '<div class="pex-globe"></div><div class="pex-label">Peruanos en<br>el extranjero</div>', iconSize: [120, 100], iconAnchor: [60, 50] }) }).addTo(map);
-        
-        pexLayer.on('click', () => {
-            let d = elecciones[periodos[currentIndex]]?.mapa["EXTRANJERO"];
-            if (d) L.popup().setLatLng(coordPopupMundito).setContent(`<div class="popup-region">EXTRANJERO</div><div class="popup-party">${d.partido}</div><div class="popup-pct">${d.pct} <span class="popup-pct-label">(votos válidos)</span></div>`).openOn(map);
-        });
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            const matches = todosLosCandidatos.filter(cand => {
+                if(!cand.nombre) return false;
+                const nom = cand.nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                
+                const matchText = terminosBusqueda.every(termino => nom.includes(termino));
+                const matchPartido = (partidoFiltro === "" || partidoFiltro === "ALL") ? true : cand.partidoActual === partidoFiltro;
+                
+                return matchText && matchPartido;
+            }).slice(0, 15);
 
-        actualizarPantalla();
-        iniciarAnimacion();
-    });
-}).catch(error => {
-    console.error("Error crítico cargando los datos electorales:", error);
-    document.getElementById("year-display").innerText = "⚠️ Error cargando datos.";
-});
+            if (matches.length > 0) {
+                panel.style.display = "block";
+                let html = '';
+                matches.forEach(cand => {
+                    let pActual = cand.partidoActual || "Indep.";
+                    let fotoMini = cand.idFoto ? `<img src="${getUrlImagen(cand.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${getInitials(cand.nombre)}'"/>` : getInitials(cand.nombre);
 
-function actualizarPantalla() {
-    document.getElementById("year-display").innerText = periodos[currentIndex];
-    geoJsonLayer.setStyle(layerFeature => getStyle(layerFeature.properties.NOMBDEP));
-    geoJsonLayer.eachLayer(layer => onEachFeature(layer.feature, layer));
-    if (callaoInset) {
-        callaoInset.setStyle(getStyle("CALLAO"));
-        callaoInset.eachLayer(layer => onEachFeature(layer.feature, layer));
-    }
-    
-    let globe = pexLayer?.getElement()?.querySelector('.pex-globe');
-    if (globe) {
-        let currentElec = elecciones[periodos[currentIndex]];
-        let d = currentElec ? currentElec.mapa["EXTRANJERO"] : null;
-        let colorFondo = (d && d.color && d.color !== CONFIG.colores.defecto) ? d.color : 'transparent';
+                    html += `
+                        <div class="preselector-item" data-id="${cand.dni}">
+                            <div class="preselector-avatar" style="padding:0; overflow:hidden;">${fotoMini}</div>
+                            <div class="preselector-info">
+                                <div class="preselector-name">${cand.nombre}</div>
+                            </div>
+                            <div class="preselector-badge">${pActual}</div>
+                        </div>
+                    `;
+                });
+                panel.innerHTML = html;
 
-        if (periodos[currentIndex].includes("1980")) {
-            globe.style.backgroundColor = "#ffffff"; 
-            globe.style.filter = "invert(1)";
-        } else {
-            globe.style.backgroundColor = colorFondo; 
-            globe.style.filter = "none";              
-        }
-    }
-
-    updateLegend();
-
-    const noteContainer = document.getElementById("year-note");
-    const editorNoteContainer = document.getElementById("editor-note");
-
-    if (periodos[currentIndex].includes("2000")) {
-        if (esMovil) {
-            noteContainer.innerHTML = `
-                <div id="btn-contexto-movil" style="cursor:pointer; font-weight:900; color:#111; text-align:center;">
-                    Mostrar contexto histórico 
-                </div>
-                <div id="texto-contexto-movil" style="display:none; margin-top:8px; border-top: 1px solid #ddd; padding-top: 8px;">
-                    Las elecciones generales del año 2000, que culminaron en la re-reelección de Alberto Fujimori, recibieron serios señalamientos de fraude por parte de organismos internacionales.
-                </div>
-            `;
-            noteContainer.style.display = "block";
-            if (editorNoteContainer) editorNoteContainer.style.display = "none";
-            
-            document.getElementById("btn-contexto-movil").addEventListener("click", function() {
-                const texto = document.getElementById("texto-contexto-movil");
-                if (texto.style.display === "none") {
-                    texto.style.display = "block";
-                    this.innerHTML = "Ocultar contexto histórico";
-                } else {
-                    texto.style.display = "none";
-                    this.innerHTML = "Mostrar contexto histórico";
-                }
-            });
-        } else {
-            noteContainer.style.display = "none";
-            if (editorNoteContainer) {
-                editorNoteContainer.innerHTML = "<strong>Nota del editor:</strong> Las elecciones generales del año 2000, que culminaron en la re-reelección de Alberto Fujimori, recibieron serios señalamientos de fraude por parte de organismos internacionales.";
-                editorNoteContainer.style.display = "block";
-            }
-        }
-    } else {
-        noteContainer.style.display = "none";
-        if (editorNoteContainer) editorNoteContainer.style.display = "none";
-    }
-}
-const btnPlayPause = document.getElementById("play-pause-btn");
-const btnPrev = document.getElementById("prev-btn");
-const btnNext = document.getElementById("next-btn");
-const btnRestart = document.getElementById("restart-btn");
-
-function avanzarFrame() { currentIndex = (currentIndex + 1) % periodos.length; actualizarPantalla(); }
-function retrocederFrame() { currentIndex = (currentIndex - 1 + periodos.length) % periodos.length; actualizarPantalla(); }
-
-function iniciarAnimacion() { 
-    timerInterval = setInterval(avanzarFrame, CONFIG.animacion.velocidad); 
-    isPlaying = true; btnPlayPause.innerHTML = "⏸"; 
-    btnPrev.disabled = true; btnNext.disabled = true;
-}
-
-function pausarAnimacion() { 
-    clearInterval(timerInterval); 
-    isPlaying = false; btnPlayPause.innerHTML = "▶"; 
-    btnPrev.disabled = false; btnNext.disabled = false;
-}
-
-btnPlayPause.addEventListener("click", () => isPlaying ? pausarAnimacion() : iniciarAnimacion());
-btnNext.addEventListener("click", () => { if (!isPlaying) avanzarFrame(); });
-btnPrev.addEventListener("click", () => { if (!isPlaying) retrocederFrame(); });
-
-btnRestart.addEventListener("click", () => {
-    currentIndex = 0; actualizarPantalla();
-    if (!isPlaying) iniciarAnimacion();
-    else { clearInterval(timerInterval); timerInterval = setInterval(avanzarFrame, CONFIG.animacion.velocidad); }
-});
-
-// ===============================================
-// BLOQUE 2: DICCIONARIO MAESTRO 2021 (MAPA + GRÁFICO FASE 2)
-// ===============================================
-const dataRegiones2021 = {
-    "AMAZONAS": { macro: "ORIENTE", electores: 306186 },
-    "ANCASH": { macro: "NORTE", electores: 886265 },
-    "APURIMAC": { macro: "CENTRO", electores: 316000 },
-    "AREQUIPA": { macro: "SUR", electores: 1145268 },
-    "AYACUCHO": { macro: "CENTRO", electores: 473282 },
-    "CAJAMARCA": { macro: "NORTE", electores: 1103247 },
-    "CUSCO": { macro: "SUR", electores: 1025280 },
-    "HUANCAVELICA": { macro: "CENTRO", electores: 299843 },
-    "HUANUCO": { macro: "CENTRO", electores: 586411 },
-    "ICA": { macro: "SUR", electores: 651364 },
-    "JUNIN": { macro: "CENTRO", electores: 982556 },
-    "LA LIBERTAD": { macro: "NORTE", electores: 1429469 },
-    "LAMBAYEQUE": { macro: "NORTE", electores: 977656 },
-    "LIMA": { macro: "LIMA Y CALLAO", electores: 8322644 },
-    "LORETO": { macro: "ORIENTE", electores: 699964 },
-    "MADRE DE DIOS": { macro: "ORIENTE", electores: 116513 },
-    "MOQUEGUA": { macro: "SUR", electores: 148367 },
-    "PASCO": { macro: "CENTRO", electores: 200682 },
-    "PIURA": { macro: "NORTE", electores: 1396448 },
-    "PUNO": { macro: "SUR", electores: 922016 },
-    "SAN MARTIN": { macro: "ORIENTE", electores: 636330 },
-    "TACNA": { macro: "SUR", electores: 282974 },
-    "TUMBES": { macro: "NORTE", electores: 167771 },
-    "CALLAO": { macro: "LIMA Y CALLAO", electores: 824496 },
-    "UCAYALI": { macro: "ORIENTE", electores: 389889 }
-};
-
-// ===============================================
-// BLOQUE 3: MAPA DE IMPACTO (FASE 2)
-// ===============================================
-const staticOptionsImpacto = {
-    zoomControl: false, dragging: false, scrollWheelZoom: false,
-    doubleClickZoom: false, touchZoom: false, attributionControl: false, zoomSnap: 0
-};
-
-const mapaImpacto = L.map('mapa-impacto', staticOptionsImpacto).setView(
-    esMovil ? [-9.0, -75.0] : [-9.5, -74.5], 
-    esMovil ? 5.0 : 5.4                      
-);
-let capaCartograma;
-
-function sincronizarFoco(macroObjetivo, origen = 'otro') {
-    if (capaCartograma) {
-        capaCartograma.eachLayer(layer => {
-            const data = dataRegiones2021[layer.feature.properties.NOMBDEP];
-            if (!macroObjetivo) {
-                layer.setStyle({ fillColor: CONFIG.colores.macro[data.macro], fillOpacity: 0.85, opacity: 1, color: "#ffffff" });
-            } else if (data && data.macro === macroObjetivo) {
-                layer.setStyle({ fillColor: CONFIG.colores.macro[data.macro], fillOpacity: 1, opacity: 1, color: "#ffffff" }); 
+                panel.querySelectorAll('.preselector-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        const dniSeleccionado = this.getAttribute('data-id');
+                        const candidato = todosLosCandidatos.find(c => c.dni === dniSeleccionado);
+                        input.value = ""; 
+                        panel.style.display = "none";
+                        renderTarjetaCandidato(candidato, resultId);
+                    });
+                });
             } else {
-                layer.setStyle({ fillColor: '#e5e5e5', fillOpacity: 0.7, opacity: 1, color: "#ffffff" }); 
+                panel.style.display = "block";
+                panel.innerHTML = `<div style="padding: 15px; color: #888; font-size:13px;">No hay coincidencia.</div>`;
             }
-        });
-    }
-
-    if (window.graficoAreas) {
-        let targetDatasetIndex = -1;
-
-        window.graficoAreas.data.datasets.forEach((dataset, index) => {
-            if (!macroObjetivo || dataset.label === macroObjetivo) {
-                dataset.backgroundColor = CONFIG.colores.macro[dataset.label];
-                dataset.borderColor = CONFIG.colores.macro[dataset.label];
-                if (dataset.label === macroObjetivo) targetDatasetIndex = index;
-            } else {
-                dataset.backgroundColor = '#eaeaea'; 
-                dataset.borderColor = '#d1d1d1';     
-            }
-        });
-
-        if (origen !== 'grafico') {
-            if (macroObjetivo && targetDatasetIndex !== -1) {
-                window.graficoAreas.tooltip.setActiveElements([{ datasetIndex: targetDatasetIndex, index: 2 }], {x: 0, y: 0});
-                window.graficoAreas.setActiveElements([{ datasetIndex: targetDatasetIndex, index: 2 }]);
-            } else {
-                window.graficoAreas.tooltip.setActiveElements([], {x: 0, y: 0});
-                window.graficoAreas.setActiveElements([]);
-            }
-        }
-        window.graficoAreas.update(); 
-    }
-
-    document.querySelectorAll('.leyenda-item').forEach(item => {
-        if (!macroObjetivo || item.id === `leyenda-${macroObjetivo}`) {
-            item.style.opacity = '1';
-        } else {
-            item.style.opacity = '0.3';
-        }
-    });
-}
-
-function onEachFeatureImpacto(feature, layer) {
-    const regionNombre = feature.properties.NOMBDEP;
-    const data = dataRegiones2021[regionNombre];
-
-    if (data) {
-        const electoresFmt = new Intl.NumberFormat('es-PE').format(data.electores);
-        layer.bindPopup(`
-            <div class="popup-region">${regionNombre}</div>
-            <div class="popup-party" style="font-weight:bold; color: ${CONFIG.colores.macro[data.macro]};">MACRORREGIÓN ${data.macro}</div>
-            <div class="popup-pct">${electoresFmt} <span class="popup-pct-label">(electores)</span></div>
-        `, { closeButton: false });
-
-        layer.on({
-            mouseover: (e) => sincronizarFoco(data.macro, 'mapa'),
-            mouseout: (e) => sincronizarFoco(null, 'mapa')
-        });
-    }
-}
-
-fetch("mapa_2021_def.geojson")
-    .then(res => res.json())
-    .then(data => {
-        capaCartograma = L.geoJSON(data, {
-            style: (feature) => {
-                const macro = dataRegiones2021[feature.properties.NOMBDEP]?.macro;
-                return { fillColor: CONFIG.colores.macro[macro] || "#ccc", weight: 1.5, opacity: 1, color: "#ffffff", fillOpacity: 0.85 };
-            },
-            onEachFeature: onEachFeatureImpacto
-        }).addTo(mapaImpacto);
-    }).catch(error => console.error("Error cargando mapa Fase 2:", error));
-
-// ===============================================
-// BLOQUE 4: GRÁFICO DE ÁREAS Y LEYENDA (FASE 2)
-// ===============================================
-const ctxImpacto = document.getElementById('grafico-areas').getContext('2d');
-
-window.graficoAreas = new Chart(ctxImpacto, {
-    type: 'line',
-    data: {
-        labels: ['1980', '2001', '2021'],
-        datasets: [
-            { label: 'LIMA Y CALLAO', data: [2571748, 5549649, 9147140], borderColor: CONFIG.colores.macro['LIMA Y CALLAO'], backgroundColor: CONFIG.colores.macro['LIMA Y CALLAO'], fill: true, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'NORTE', data: [1518390, 3619731, 5960856], borderColor: CONFIG.colores.macro['NORTE'], backgroundColor: CONFIG.colores.macro['NORTE'], fill: true, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'SUR', data: [1150253, 2569392, 4175269], borderColor: CONFIG.colores.macro['SUR'], backgroundColor: CONFIG.colores.macro['SUR'], fill: true, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'CENTRO', data: [862783, 1846016, 2858774], borderColor: CONFIG.colores.macro['CENTRO'], backgroundColor: CONFIG.colores.macro['CENTRO'], fill: true, pointRadius: 4, pointHoverRadius: 6 },
-            { label: 'ORIENTE', data: [328447, 1065762, 2148882], borderColor: CONFIG.colores.macro['ORIENTE'], backgroundColor: CONFIG.colores.macro['ORIENTE'], fill: true, pointRadius: 4, pointHoverRadius: 6 }
-        ]
-    },
-    options: {
-        responsive: true, maintainAspectRatio: false, animation: { duration: 250 },
-        interaction: { mode: 'nearest', axis: 'xy', intersect: false },
-        scales: { x: { grid: { display: false } }, y: { stacked: true, ticks: { callback: value => value / 1000000 + ' M' } } },
-        plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) { label += ': '; } if (context.parsed.y !== null) { label += new Intl.NumberFormat('es-PE').format(context.parsed.y); } return label; } } }
-        },
-        onHover: (event, activeElements) => {
-            if (activeElements.length > 0) {
-                const datasetIndex = activeElements[0].datasetIndex;
-                const macroHovered = window.graficoAreas.data.datasets[datasetIndex].label;
-                sincronizarFoco(macroHovered, 'grafico');
-            } else {
-                sincronizarFoco(null, 'grafico');
-            }
-        }
-    }
-});
-
-document.getElementById('grafico-areas').addEventListener('mouseleave', () => sincronizarFoco(null, 'grafico'));
-
-const contenedorLeyenda = document.getElementById('leyenda-compartida');
-if (contenedorLeyenda) {
-    contenedorLeyenda.innerHTML = ''; 
-    Object.keys(CONFIG.colores.macro).forEach(macro => {
-        const item = document.createElement('div');
-        item.className = 'leyenda-item';
-        item.id = `leyenda-${macro}`;
-        
-        const colorBox = document.createElement('div');
-        colorBox.className = 'leyenda-color';
-        colorBox.style.backgroundColor = CONFIG.colores.macro[macro];
-        
-        const texto = document.createElement('span');
-        texto.innerText = macro;
-        
-        item.appendChild(colorBox);
-        item.appendChild(texto);
-        
-        item.addEventListener('mouseover', () => sincronizarFoco(macro, 'leyenda'));
-        item.addEventListener('mouseout', () => sincronizarFoco(null, 'leyenda'));
-        
-        contenedorLeyenda.appendChild(item);
-    });
-}
-
-// ===============================================
-// BLOQUE 5: FASE 3 - MAPA DE PARTICIPACIÓN (AZUL)
-// ===============================================
-const periodosFase3 = ['1980', '1985', '1990 - 1ra Vuelta', '1990 - 2da Vuelta', '1995', '2000 - 1ra Vuelta', '2000 - 2da Vuelta', '2001 - 1ra Vuelta', '2001 - 2da Vuelta', '2006 - 1ra Vuelta', '2006 - 2da Vuelta', '2011 - 1ra Vuelta', '2011 - 2da Vuelta', '2016 - 1ra Vuelta', '2016 - 2da Vuelta', '2021 - 1ra Vuelta', '2021 - 2da Vuelta'];
-
-const participacionNacion = [82.52, 90.60, 78.57, 79.94, 73.85, 82.82, 81.01, 82.28, 81.37, 88.71, 87.71, 83.71, 82.54, 81.80, 80.09, 70.05, 74.57];
-
-const participacionRegiones = {
-    "AMAZONAS": [73.13, 93.15, 62.23, 63.55, 66.83, 78.53, 74.27, 76.25, 73.25, 85.49, 82.60, 75.87, 73.02, 71.64, 67.58, 60.11, 63.32],
-    "ANCASH": [81.03, 91.39, 72.92, 74.35, 69.27, 81.78, 79.90, 81.25, 79.90, 89.18, 87.97, 83.21, 81.77, 79.09, 77.30, 69.26, 73.26],
-    "APURIMAC": [72.30, 82.10, 72.08, 72.15, 63.52, 77.41, 74.56, 76.22, 73.37, 86.58, 84.07, 79.40, 76.88, 76.96, 72.30, 69.39, 71.96],
-    "AREQUIPA": [82.23, 92.43, 86.25, 86.10, 75.30, 87.24, 85.44, 86.75, 86.09, 90.97, 90.47, 88.10, 87.64, 86.50, 85.79, 78.78, 79.69],
-    "AYACUCHO": [75.30, 82.87, 52.47, 59.54, 53.50, 74.00, 71.89, 73.69, 70.84, 87.61, 85.96, 78.87, 76.67, 77.34, 73.33, 68.63, 71.92],
-    "CAJAMARCA": [74.92, 87.49, 73.32, 70.44, 68.46, 80.81, 77.69, 78.77, 77.40, 88.24, 85.63, 80.81, 78.82, 77.21, 73.45, 62.60, 69.30],
-    "CUSCO": [79.54, 87.15, 75.57, 75.78, 64.73, 78.93, 75.28, 78.51, 76.43, 87.76, 85.47, 83.41, 81.61, 81.44, 78.54, 73.52, 75.85],
-    "HUANCAVELICA": [77.20, 78.31, 59.61, 55.67, 55.59, 75.16, 73.20, 74.67, 72.30, 89.19, 86.70, 76.95, 73.96, 73.38, 68.74, 67.55, 68.99],
-    "HUANUCO": [75.68, 85.51, 49.89, 56.11, 60.17, 74.73, 71.64, 73.01, 70.08, 86.80, 84.15, 78.34, 74.43, 74.71, 70.24, 68.28, 69.10],
-    "ICA": [83.28, 94.94, 85.63, 86.28, 77.63, 88.37, 87.32, 87.95, 87.64, 92.31, 91.90, 88.99, 88.38, 87.43, 86.94, 75.97, 79.87],
-    "JUNIN": [80.63, 90.19, 50.55, 66.63, 65.91, 81.71, 80.15, 80.97, 79.69, 88.16, 87.81, 81.92, 80.88, 80.81, 79.55, 71.93, 74.37],
-    "LA LIBERTAD": [81.50, 93.54, 81.94, 80.90, 71.23, 82.71, 81.02, 81.80, 81.46, 88.94, 88.33, 84.84, 83.96, 82.48, 80.89, 68.93, 74.36],
-    "LAMBAYEQUE": [86.68, 92.29, 84.24, 83.55, 78.72, 85.85, 84.15, 85.06, 84.59, 89.06, 88.31, 84.53, 83.95, 83.32, 82.41, 71.40, 76.32],
-    "LIMA": [84.63, 92.17, 87.06, 87.48, 78.79, 85.52, 84.21, 85.36, 84.93, 90.18, 89.65, 87.74, 87.16, 86.66, 86.31, 74.57, 79.66],
-    "LORETO": [72.15, 87.17, 75.42, 75.80, 70.16, 76.91, 72.77, 77.19, 75.72, 84.20, 82.75, 75.00, 73.45, 70.19, 68.17, 60.93, 61.92],
-    "MADRE DE DIOS": [83.33, 83.40, 73.51, 80.17, 62.81, 74.40, 72.31, 71.67, 71.97, 85.08, 84.35, 82.66, 81.91, 80.89, 79.87, 71.07, 73.66],
-    "MOQUEGUA": [95.38, 92.59, 90.44, 86.13, 75.69, 88.54, 86.95, 87.91, 87.18, 91.63, 91.17, 87.26, 86.78, 86.61, 85.54, 77.20, 78.37],
-    "PASCO": [77.62, 86.94, 62.81, 72.16, 64.56, 81.21, 79.40, 79.47, 77.71, 88.42, 87.75, 79.03, 77.24, 76.01, 73.38, 63.65, 67.23],
-    "PIURA": [84.48, 91.55, 84.64, 85.30, 76.67, 85.15, 83.90, 84.18, 83.80, 90.04, 89.06, 85.32, 84.38, 82.76, 81.56, 66.75, 75.34],
-    "PUNO": [83.67, 90.99, 77.47, 78.36, 72.93, 84.91, 83.28, 84.72, 83.88, 92.65, 91.38, 87.00, 85.22, 85.49, 83.13, 81.91, 82.09],
-    "SAN MARTIN": [79.67, 85.48, 68.64, 73.47, 65.81, 79.61, 77.89, 78.18, 76.88, 87.51, 85.85, 82.04, 80.54, 78.83, 77.31, 69.17, 73.07],
-    "TACNA": [88.58, 93.73, 92.91, 94.65, 80.55, 90.02, 88.20, 89.80, 89.47, 92.35, 92.11, 89.24, 88.56, 86.46, 85.57, 77.80, 79.35],
-    "TUMBES": [83.83, 95.61, 90.62, 94.51, 76.28, 87.42, 86.57, 86.92, 87.18, 91.59, 91.01, 85.47, 85.12, 83.42, 82.81, 74.56, 78.32],
-    "CALLAO": [85.35, 94.05, 86.26, 84.55, 78.59, 84.49, 83.55, 84.39, 84.02, 89.90, 89.41, 87.62, 87.12, 86.54, 86.14, 75.23, 79.53],
-    "UCAYALI": [null, 85.95, 70.36, 77.17, 69.03, 75.39, 73.77, 75.23, 73.96, 84.54, 83.72, 78.62, 77.02, 76.77, 75.28, 66.28, 69.20],
-    "EXTRANJERO": [null, 74.26, 45.32, 41.49, null, 49.69, 45.52, 51.79, 49.79, 63.49, 61.79, 53.38, 50.23, 53.34, 44.02, 22.86, 36.47]
-};
-
-const obtenerColorAzul = (valor) => {
-    if (valor === null || valor === undefined) return "#e0e0e0"; 
-    if (valor >= 85) return "#002868"; 
-    if (valor >= 80) return "#0047ab"; 
-    if (valor >= 75) return "#3a75c4"; 
-    if (valor >= 65) return "#75a3dd"; 
-    if (valor >= 50) return "#b0d0f5"; 
-    return "#e6f0fa";                  
-};
-
-let indexActualFase3 = 16; 
-const mapaFase3 = L.map('mapa-fase3', {
-    zoomControl: false, dragging: false, scrollWheelZoom: false,
-    doubleClickZoom: false, touchZoom: false, attributionControl: false, zoomSnap: 0
-}).setView(
-    esMovil ? [-9.0, -75.0] : [-11.0, -76.5], 
-    esMovil ? 4.3 : 4.8                      
-);
-
-let capaGeoJsonFase3, callaoInsetFase3, pexLayerFase3;
-
-function repintarMapaFase3() {
-    const estiloBase = (valor) => {
-        return { fillColor: obtenerColorAzul(valor), weight: 0.8, opacity: 1, color: "#444444", fillOpacity: 0.95 };
+        }, 300);
     };
 
-    if (capaGeoJsonFase3) {
-        capaGeoJsonFase3.setStyle((feature) => {
-            let nombre = feature.properties ? feature.properties.NOMBDEP.toUpperCase().trim() : "";
-            let valor = (participacionRegiones[nombre]) ? participacionRegiones[nombre][indexActualFase3] : null;
-            return estiloBase(valor);
+    input.addEventListener('input', ejecutarBusqueda);
+    select.addEventListener('change', ejecutarBusqueda); 
+
+    document.addEventListener("click", function (e) {
+        if (e.target !== input && e.target !== select && e.target !== panel && !panel.contains(e.target)) {
+            panel.style.display = "none";
+        }
+    });
+}
+
+// ===============================================
+// FASE 3: HEATMAP NATIVO CSS GRID
+// ===============================================
+function renderHeatmap(candidatos, partidoFiltro = "ALL") {
+    const grid = document.getElementById('heatmap-grid');
+    if (!grid) return;
+
+    let pool = candidatos;
+    if (partidoFiltro !== "ALL") pool = candidatos.filter(c => c.partidoActual === partidoFiltro);
+
+    const matriz = Array(5).fill(0).map(() => Array(10).fill(null).map(() => ({ count: 0, ejemplos: [] })));
+    
+    pool.forEach(c => {
+        let historialSeguro = ensureArray(c.historialElectoral);
+        
+        const totalParticipaciones = historialSeguro.length + 1; 
+        
+        let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
+        if (c.partidoActual) partidosUsados.push(c.partidoActual);
+        
+        let uniqueParties = new Set(partidosUsados).size;
+        
+        let colIndex = Math.min(totalParticipaciones - 1, 9);
+        let rowIndex;
+        if (uniqueParties >= 5) rowIndex = 0;
+        else if (uniqueParties === 4) rowIndex = 1;
+        else if (uniqueParties === 3) rowIndex = 2;
+        else if (uniqueParties === 2) rowIndex = 3;
+        else rowIndex = 4;
+
+        matriz[rowIndex][colIndex].count++;
+        if (matriz[rowIndex][colIndex].ejemplos.length < 4) matriz[rowIndex][colIndex].ejemplos.push(c.nombre);
+    });
+
+    let localMaxDensity = 0;
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 10; c++) {
+            if (r === 4 && c === 0) continue; 
+            if (matriz[r][c].count > localMaxDensity) localMaxDensity = matriz[r][c].count;
+        }
+    }
+    if (localMaxDensity === 0) localMaxDensity = 1;
+
+    let html = '';
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 10; c++) { 
+            const bucket = matriz[r][c];
+            let bgColor = "#f4f6f8"; 
+            let textColor = "#111111"; 
+            
+            if (bucket.count > 0) {
+                let intensidad;
+                if (r === 4 && c === 0) intensidad = 1.0; 
+                else {
+                    const ratio = Math.sqrt(bucket.count / localMaxDensity);
+                    intensidad = 0.3 + (ratio * 0.7); 
+                    if (intensidad > 1) intensidad = 1;
+                }
+                bgColor = `rgba(230, 57, 70, ${intensidad})`; 
+            }
+
+            let tooltipHtml = '';
+            if (bucket.count > 0) {
+                const labelIntentos = (c === 9) ? "10 a más postulaciones totales" : `${c + 1} postulación(es) en total`;
+                const labelPartidos = (r === 0) ? "con 5 o más partidos" : `con ${5 - r} partido(s)`;
+                
+                tooltipHtml = `
+                <div class="tooltip">
+                    <strong style="color:#fff; font-size:12px; margin-bottom:2px;">${labelIntentos} <br> ${labelPartidos}</strong>
+                    <hr style="border:0; border-top:1px solid #444; margin: 4px 0;">
+                    <strong>${bucket.count} candidatos</strong>
+                    <div style="margin-top:4px; font-size:11px; color:#ccc;">Ejemplos:</div>
+                    ${bucket.ejemplos.map(e => `• ${e}`).join('<br>')}
+                    ${bucket.count > 4 ? `<br><i style="color:#888;">...y ${bucket.count - 4} más</i>` : ''}
+                </div>`;
+            }
+
+            html += `
+                <div class="heatmap-cell" style="background-color: ${bgColor}; color: ${textColor}; font-weight: bold; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
+                    ${bucket.count > 0 ? bucket.count : ''}
+                    ${tooltipHtml}
+                </div>
+            `;
+        }
+    }
+    grid.innerHTML = html;
+}
+
+// ===============================================
+// FASE 4: TIMELINE 1D (Antigüedad de Afiliación)
+// ===============================================
+const FECHA_LIMITE = new Date(2025, 6, 12); 
+
+const deadlinePlugin = {
+    id: 'deadlinePlugin',
+    afterDraw(chart) {
+        const ctx = chart.ctx;
+        const xAxis = chart.scales.x;
+        const xPos = xAxis.getPixelForValue(FECHA_LIMITE.getTime()); 
+
+        if (xPos >= chart.chartArea.left && xPos <= chart.chartArea.right) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(xPos, chart.chartArea.top);
+            ctx.lineTo(xPos, chart.chartArea.bottom);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(229, 57, 53, 0.9)'; 
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(229, 57, 53, 1)';
+            ctx.font = 'bold 11px Arial';
+            ctx.fillText('12 JUL 2025', xPos - 75, chart.chartArea.top + 15);
+            ctx.fillText('CIERRE PADRÓN', xPos - 100, chart.chartArea.top + 30);
+            ctx.restore();
+        }
+    }
+};
+if (typeof Chart !== 'undefined') Chart.register(deadlinePlugin);
+
+function extractAffiliationTimestamp(candidato) {
+    if (!candidato.partidoActual) return null;
+    
+    let historialSeguro = ensureArray(candidato.historialPartidario);
+    if (historialSeguro.length === 0) return null;
+
+    const activeAffiliation = historialSeguro.find(h =>
+        h.partido === candidato.partidoActual && h.anio && h.anio.includes("Act.")
+    );
+    if (activeAffiliation && activeAffiliation.fechaInicio) {
+        const parts = activeAffiliation.fechaInicio.split('/');
+        if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+    }
+    return null;
+}
+
+function getDiasAntiguedad(timestampAfiliacion) {
+    const msPerDay = 1000 * 60 * 60 * 24;
+    return Math.round((FECHA_LIMITE.getTime() - timestampAfiliacion) / msPerDay);
+}
+
+function renderTimeline(candidatos, partidoFiltro = "ALL") {
+    const canvas = document.getElementById('timeline-chart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (timelineChartInstance) timelineChartInstance.destroy();
+
+    let datasets = [];
+    
+    const minYearScale = (partidoFiltro === "ALL") ? new Date(2020, 0, 1).getTime() : new Date(2000, 0, 1).getTime();
+
+    if (partidoFiltro === "ALL") {
+        const partyStats = {};
+        candidatos.forEach(c => {
+            const timestamp = extractAffiliationTimestamp(c);
+            if (timestamp !== null && timestamp <= FECHA_LIMITE.getTime()) {
+                const p = c.partidoActual;
+                if (!partyStats[p]) partyStats[p] = { sumTimestamp: 0, count: 0 };
+                partyStats[p].sumTimestamp += timestamp;
+                partyStats[p].count++;
+            }
+        });
+
+        const dataPoints = [];
+        const pointStyles = [];
+        const bgColors = [];
+        
+        const sortedParties = Object.keys(partyStats).sort((a,b) => {
+            return (partyStats[a].sumTimestamp / partyStats[a].count) - (partyStats[b].sumTimestamp / partyStats[b].count);
+        });
+
+        const yLevels = [-8, 8, -6, 6, -4, 4, -7, 7, -5, 5, -3, 3, -2, 2, -1, 1, 0];
+
+        sortedParties.forEach((p, index) => {
+            const avgTimestamp = partyStats[p].sumTimestamp / partyStats[p].count;
+            const yPos = yLevels[index % yLevels.length];
+
+            dataPoints.push({ 
+                x: avgTimestamp, 
+                y: yPos, 
+                partido: p, 
+                count: partyStats[p].count,
+                diasPromedio: getDiasAntiguedad(avgTimestamp)
+            });
+
+            const idPart = normalizarId(p);
+            const logoUrl = (diccionarioPartidos[idPart] && diccionarioPartidos[idPart].logo) ? getUrlImagen(diccionarioPartidos[idPart].logo) : null;
+            
+            if (logoUrl) {
+                const img = new Image();
+                img.src = logoUrl;
+                img.width = 24; 
+                img.height = 24;
+                pointStyles.push(img);
+            } else {
+                pointStyles.push('circle');
+            }
+
+            bgColors.push(hexToRgba(CONFIG.colores.partidos[p] || CONFIG.colores.partidos["DEFECTO"], 0.85));
+        });
+
+        datasets.push({
+            label: 'Promedio por Partido',
+            data: dataPoints,
+            backgroundColor: bgColors,
+            borderColor: '#111',
+            borderWidth: 1.5,
+            pointRadius: 8,
+            pointHoverRadius: 12,
+            pointStyle: pointStyles 
+        });
+        
+    } else {
+        const dataPoints = [];
+
+        candidatos.forEach(c => {
+            if (c.partidoActual === partidoFiltro) {
+                const timestamp = extractAffiliationTimestamp(c);
+                if (timestamp !== null && timestamp <= FECHA_LIMITE.getTime()) {
+                    const yPos = (Math.random() * 18) - 9; 
+
+                    dataPoints.push({
+                        x: timestamp,
+                        y: yPos, 
+                        nombre: c.nombre,
+                        partido: c.partidoActual,
+                        diasAfiliado: getDiasAntiguedad(timestamp)
+                    });
+                }
+            }
+        });
+
+        let pColor = CONFIG.colores.partidos[partidoFiltro] || CONFIG.colores.partidos["DEFECTO"];
+        datasets.push({
+            label: 'Afiliados Vigentes',
+            data: dataPoints,
+            backgroundColor: hexToRgba(pColor, 0.7),
+            borderColor: hexToRgba(pColor, 1),
+            borderWidth: 1,
+            pointRadius: 6,
+            pointHoverRadius: 9
         });
     }
 
-    if (callaoInsetFase3) {
-        let valorCallao = participacionRegiones["CALLAO"][indexActualFase3];
-        callaoInsetFase3.setStyle(estiloBase(valorCallao));
-    }
-    
-    if (pexLayerFase3) {
-        let valorExt = participacionRegiones["EXTRANJERO"][indexActualFase3];
-        let globe = pexLayerFase3.getElement()?.querySelector('.pex-globe');
-        if (globe) {
-            globe.style.backgroundColor = obtenerColorAzul(valorExt);
-        }
-    }
-}
-
-function onEachFeatureFase3(feature, layer) {
-    layer.on('mouseover', (e) => {
-        let nombre = feature.properties ? feature.properties.NOMBDEP.toUpperCase() : "CALLAO";
-        let valor = participacionRegiones[nombre][indexActualFase3];
-        let textoValor = valor ? `${valor}%` : "Sin registro";
-        
-        L.popup()
-            .setLatLng(e.latlng)
-            .setContent(`
-                <div class="popup-region">${nombre}</div>
-                <div class="popup-party" style="font-weight:bold; color: #0047ab;">PARTICIPACIÓN</div>
-                <div class="popup-pct">${textoValor}</div>
-            `)
-            .openOn(mapaFase3);
-    });
-    layer.on('mouseout', () => mapaFase3.closePopup());
-}
-
-fetch("mapa.geojson").then(res => res.json()).then(data => {
-    capaGeoJsonFase3 = L.geoJSON(data, { 
-        style: { color: "#444444", weight: 0.8, fillOpacity: 0.95 },
-        onEachFeature: onEachFeatureFase3 
-    }).addTo(mapaFase3);
-
-    const callaoF = data.features.find(f => f.properties.NOMBDEP === "CALLAO");
-    if (callaoF) {
-        let callaoGeom = JSON.parse(JSON.stringify(callaoF.geometry));
-        const shift = [-82.5, -11.5], scale = 12, center = [-77.12, -12.05];
-        callaoGeom.coordinates = (function transform(coords) { 
-            return Array.isArray(coords[0]) ? coords.map(transform) : [shift[0] + (coords[0] - center[0]) * scale, shift[1] + (coords[1] - center[1]) * scale]; 
-        })(callaoGeom.coordinates);
-        
-        callaoInsetFase3 = L.geoJSON(callaoGeom, { 
-            style: { color: "#444444", weight: 0.8, fillOpacity: 0.95 },
-            onEachFeature: onEachFeatureFase3 
-        }).addTo(mapaFase3);
-        
-        L.polyline([[-10.8, -82.2], [-12.05, -77.50]], { color: "#999", weight: 1, dashArray: "4, 4" }).addTo(mapaFase3);
-        L.marker([-8.5, -82.75], { icon: L.divIcon({ className: 'pex-label', html: 'CALLAO', iconSize: [100, 20], iconAnchor: [50, 10] }), interactive: false }).addTo(mapaFase3);
-    }
-
-    const coordMunditoFase3 = esMovil ? [-19.5, -81.5] : [-15.5, -81.5];
-    const coordPopupMunditoFase3 = esMovil ? [-18.2, -81.5] : [-14.2, -81.5];
-
-    pexLayerFase3 = L.marker(coordMunditoFase3, { 
-        icon: L.divIcon({ className: 'pex-globe-container', html: '<div class="pex-globe"></div><div class="pex-label">Extranjero</div>', iconSize: [120, 100], iconAnchor: [60, 50] }) 
-    }).addTo(mapaFase3);
-
-    pexLayerFase3.on('mouseover', (e) => {
-        let valorExt = participacionRegiones["EXTRANJERO"][indexActualFase3];
-        L.popup().setLatLng(coordPopupMunditoFase3).setContent(`
-            <div class="popup-region">EXTRANJERO</div>
-            <div class="popup-party" style="color: #0047ab;">PARTICIPACIÓN</div>
-            <div class="popup-pct">${valorExt ? valorExt+'%' : 'Sin registro'}</div>
-        `).openOn(mapaFase3);
-    });
-    pexLayerFase3.on('mouseout', () => mapaFase3.closePopup());
-    
-    repintarMapaFase3(); 
-}).catch(error => console.error("Error cargando mapa Fase 3:", error));
-
-const labelsFase3 = [
-    '1980', '1985', '1990 (1)', '1990 (2)', '1995', 
-    '2000 (1)', '2000 (2)', '2001 (1)', '2001 (2)', 
-    '2006 (1)', '2006 (2)', '2011 (1)', '2011 (2)', 
-    '2016 (1)', '2016 (2)', '2021 (1)', '2021 (2)'
-];
-
-const ctxFase3 = document.getElementById('grafico-barras-fase3').getContext('2d');
-
-const graficoNacion = new Chart(ctxFase3, {
-    type: 'bar',
-    data: {
-        labels: labelsFase3,
-        datasets: [{
-            label: 'Participación Nacional (%)',
-            data: participacionNacion,
-            backgroundColor: '#d1d1d1', 
-            borderRadius: 4
-        }]
-    },
-    options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: { callbacks: { title: (context) => periodosFase3[context[0].dataIndex], label: (context) => ` ${context.parsed.y}%` } }
-        },
-        scales: {
-            x: { grid: { display: false }, ticks: { maxRotation: 90, minRotation: 90, font: { size: 11 } } },
-            y: { beginAtZero: true, max: 100, ticks: { stepSize: 20, callback: value => value + '%' } }
-        },
-        onClick: (event, elements) => {
-            if (elements.length > 0) {
-                const indice = elements[0].index;
-                document.getElementById('slider-fase3').value = indice;
-                actualizarFase3(indice);
+    timelineChartInstance = new Chart(ctx, {
+        type: 'scatter',
+        data: { datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            layout: { padding: { top: 30, right: 20, left: 20 } },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(17,17,17,0.95)',
+                    titleFont: { size: 14, family: 'Arial', weight: 'bold' },
+                    bodyFont: { size: 13, family: 'Arial', lineHeight: 1.4 },
+                    padding: 12,
+                    callbacks: {
+                        label: (context) => {
+                            const p = context.raw;
+                            const fechaLegible = new Date(p.x).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
+                            
+                            if (partidoFiltro === "ALL") {
+                                return [ `Partido: ${p.partido}`, `Militantes contabilizados: ${p.count}`, `Afiliación promedio: ${fechaLegible}`, `Antigüedad promedio: ${p.diasPromedio} días antes del cierre` ];
+                            } else {
+                                return [ `Candidato: ${p.nombre}`, `Se afilió el: ${fechaLegible}`, `Antigüedad: ${p.diasAfiliado} días antes del cierre` ];
+                            }
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    title: { display: true, text: 'Línea de tiempo (Años)', font: { weight: 'bold', size: 13, family: 'Arial' } },
+                    min: minYearScale, 
+                    max: new Date(2025, 11, 31).getTime(),
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: { callback: function(value) { return new Date(value).getFullYear(); }, maxTicksLimit: 12, font: { family: 'Arial' } }
+                },
+                y: { display: false, min: -10, max: 10 } 
             }
         }
-    }
-});
-
-function actualizarFase3(nuevoIndice) {
-    indexActualFase3 = parseInt(nuevoIndice);
-    document.getElementById('fase3-year-display').innerText = periodosFase3[indexActualFase3];
-    repintarMapaFase3();
-    graficoNacion.data.datasets[0].backgroundColor = participacionNacion.map((_, i) => i === indexActualFase3 ? '#0047ab' : '#eaeaea');
-    graficoNacion.update();
+    });
 }
-
-document.getElementById('slider-fase3').addEventListener('input', (e) => actualizarFase3(e.target.value));
-
-actualizarFase3(16);
