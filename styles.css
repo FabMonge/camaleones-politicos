@@ -548,3 +548,104 @@ path.leaflet-interactive { transition: fill 0.8s ease-in-out, stroke 0.8s ease-i
     transition: background 0.2s;
 }
 .custom-option:hover { background-color: #f1f1f1; }
+
+/* =========================================
+   RANKING DE PERDEDORES (HORIZONTAL)
+   ========================================= */
+.losers-section {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fbfbfb;
+    border-radius: 12px;
+    border: 1px solid #eaeaea;
+}
+
+.losers-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.losers-title {
+    font-family: 'Georgia', serif;
+    font-size: 26px;
+    color: #111;
+    margin: 0 0 5px 0;
+}
+
+.losers-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* Contenedor flexible horizontal */
+.losers-container {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 15px;
+    overflow-x: auto; /* Permite scroll en celulares */
+    padding-bottom: 10px;
+}
+
+/* Tarjeta individual */
+.loser-card {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px 10px;
+    width: 140px; /* Ancho fijo para que todas sean iguales */
+    min-width: 140px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+/* El circulito de su partido actual */
+.loser-party-circle {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Rostros idénticos */
+.loser-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    object-fit: cover;
+    filter: grayscale(100%);
+    margin-bottom: 12px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.loser-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+.loser-stats {
+    font-size: 12px;
+    color: #c0392b; /* Rojo oscuro para resaltar la derrota */
+    font-weight: bold;
+    background: #fdf2f2;
+    padding: 4px 8px;
+    border-radius: 4px;
+}

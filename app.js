@@ -153,6 +153,154 @@ const ensureArray = (data) => {
     return arr.filter(item => item && typeof item === 'object' && item.partido && String(item.partido).trim() !== "" && item.partido !== "NA");
 };
 
+
+// ===============================================
+// DICCIONARIOS DE EQUIVALENCIA (CLONES Y ALIANZAS)
+// ===============================================
+
+const DICCIONARIO_CLONES = {
+    "AGRUPACION INDEPENDIENTE AVANCEMOS": "CAMBIO RADICAL",
+    "FRENTE POPULAR AGRICOLA FIA DEL PERU - FREPAP": "FRENTE POPULAR AGRICOLA FIA DEL PERU",
+    "PARTIDO POLITICO PERU ACCION": "PERU NACION",
+    "CAMBIO 90": "PERU PATRIA SEGURA",
+    "PERUANOS POR EL KAMBIO": "PARTIDO POLÍTICO CONTIGO",
+    "RESTAURACION NACIONAL": "VICTORIA NACIONAL",
+    "SOLIDARIDAD NACIONAL": "RENOVACION POPULAR",
+    "FUERZA 2011": "FUERZA POPULAR",
+    "PODEMOS POR EL PROGRESO DEL PERU": "PODEMOS PERU",
+    "ALIANZA PARA EL PROGRESO": "ALIANZA PARA EL PROGRESO DEL PERU",
+    "PERU LIBERTARIO": "MOVIMIENTO POLITICO REGIONAL PERU LIBRE",
+    "RENOVACION POPULAR": "SOLIDARIDAD NACIONAL",
+    "PARTIDO POLITICO NACIONAL PERU LIBRE": "PERU LIBERTARIO",
+    "PARTIDO DEMOCRATICO SOMOS PERU": "MOVIMIENTO INDEPENDIENTE SOMOS PERU - CAUSA DEMOCRATICA",
+    "PARTIDO POLÍTICO CONTIGO": "PERUANOS POR EL KAMBIO",
+    "UNION POR EL PERU": "AGRUPACION INDEPENDIENTE UNION POR EL PERU - SOCIAL DEMOCRACIA",
+    "PARTIDO NACIONALISTA PERUANO": "GANA PERU",
+    "ALIANZA ELECTORAL CAMBIO 90 - NUEVA MAYORIA": "ALIANZA POR EL FUTURO",
+    "PARTIDO POPULAR CRISTIANO - PPC": "PARTIDO POPULAR CRISTIANO - PPC - UNIDAD NACIONAL",
+    "IZQUIERDA UNIDA": "FRENTE ELECTORAL IZQUIERDA UNIDA",
+    "CHIM PUM CALLAO": "CHIMPUM - CALLAO",
+    "CHIMPUM CALLAO": "CHIM PUM CALLAO",
+    "FRENTE NACIONAL DE TRABAJADORES Y CAMPESINOS": "PERU AL 2000 - FRENATRACA",
+    // --- PARCHES DE NOMENCLATURA JNE ---
+    "ALIANZA ELECTORAL UNIDAD NACIONAL": "UNIDAD NACIONAL",
+    "PARTIDO POPULAR CRISTIANO": "PARTIDO POPULAR CRISTIANO - PPC",
+    "ALIANZA ELECTORAL SOLIDARIDAD NACIONAL": "ALIANZA SOLIDARIDAD NACIONAL",
+    "ALIANZA ELECTORAL IZQUIERDA UNIDA":"ALIANZA IZQUIERDA UNIDA"
+};
+
+const DICCIONARIO_ALIANZAS = {
+    "ALIANZA SOLIDARIDAD NACIONAL": ["CAMBIO 90", "SIEMPRE UNIDOS", "UNION POR EL PERU", "TODOS POR EL PERU", "SOLIDARIDAD NACIONAL"],
+    "PERÚ POSIBLE": ["PERU POSIBLE"],
+    "ALIANZA POR EL GRAN CAMBIO": ["ALIANZA PARA EL PROGRESO", "RESTAURACION NACIONAL", "PARTIDO POPULAR CRISTIANO - PPC", "PARTIDO HUMANISTA PERUANO"],
+    "ALIANZA POPULAR": ["PARTIDO APRISTA PERUANO", "PARTIDO POPULAR CRISTIANO - PPC", "VAMOS PERU"],
+    "ALIANZA ELECTORAL SOLIDARIDAD NACIONAL - UPP": ["SOLIDARIDAD NACIONAL", "UNION POR EL PERU"],
+    "ALIANZA PARA EL PROGRESO DE AREQUIPA": ["ALIANZA PARA EL PROGRESO"],
+    "ALIANZA PARA EL PROGRESO DE AYACUCHO": ["ALIANZA PARA EL PROGRESO"],
+    "ALIANZA PERU POSIBLE": ["ACCION POPULAR", "PARTIDO DEMOCRATICO SOMOS PERU", "PERU POSIBLE"],
+    "SUMATE - PERU POSIBLE": ["PERU POSIBLE"],
+    "UNIDAD NACIONAL": ["PARTIDO POPULAR CRISTIANO - PPC", "SOLIDARIDAD NACIONAL", "RENOVACION NACIONAL"],
+    "FREDEMO": ["MOVIMIENTO LIBERTAD", "ACCION POPULAR", "PARTIDO POPULAR CRISTIANO", "PARTIDO SOLIDARIDAD Y DEMOCRACIA"],
+    "FRENTE DE CENTRO": ["ACCION POPULAR", "PARTIDO DEMOCRATICO SOMOS PERU", "COORDINADORA NACIONAL DE INDEPENDIENTES"],
+    "ALIANZA ELECTORAL PERU 2000": ["CAMBIO 90", "ALIANZA ELECTORAL VAMOS VECINO", "ALIANZA ELECTORAL CAMBIO 90 - NUEVA MAYORIA"],
+    "ALIANZA ELECTORAL IZQUIERDA UNIDA": ["IZQUIERDA UNIDA"],
+    "ALIANZA ELECTORAL SOLUCION POPULAR": ["ALIANZA ELECTORAL VAMOS VECINO"],
+    "ALIANZA ELECTORAL VAMOS VECINO": ["ALIANZA ELECTORAL PERU 2000"],
+    "ALIANZA ELECTORAL UNIDAD POPULAR": ["PARTIDO POPULAR CRISTIANO - PPC", "ALIANZA SOLIDARIDAD NACIONAL", "RENOVACION NACIONAL"],
+    "CONVERGENCIA DEMOCRATICA": ["PARTIDO POPULAR CRISTIANO - PPC", "MOVIMIENTO DE BASES HAYISTAS"],
+    "ALIANZA ELECTORAL IZQUIERDA UNIDA":["IZQUIERDA UNIDA", "FRENTE ELECTORAL IZQUIERDA UNIDA"],
+};
+
+// ===============================================
+// MOVIMIENTOS EXCLUIDOS DE LA MATEMÁTICA PERIODÍSTICA
+// Partidos locales/regionales con INCLUIR = "NO"
+// ===============================================
+const PARTIDOS_EXCLUIDOS = ["TRABAJEMOS POR QUINCHES", "MOVIMIENTO INDEPENDIENTE COMPROMISO CAMPESINO", "MOVIMIENTO INDEPENDIENTE FRENTE POPULAR N° 3", "L.I. N° 5 FRENTE INDEPENDIENTE CRISTIANO LIBRE ACCION NAC.", "L.I. NRO 11 CAMBIO MUNICIPAL 95", "LUCHEMOS POR CAJAMARCA", "POR UN SAN JUAN SEGURO", "TODOS POR JUNIN", "PIURA EMPRENDEDOR", "FUERZA Y DESARROLLO", "TODOS POR MADRE DE DIOS", "L.I. NRO 7 GESTION POPULAR", "L.I. NRO 3 MOVIMIENTO INDEPENDIENTE DESARROLLO TECNOLOGIA Y MODERNIDAD", "TODOS CON TACNA", "UNIDOS POR EL CAMBIO DE PACHANGARA", "JUNTOS SI SE PUEDE", "¡ARRIBA PAIJAN!", "ORGANIZACION INDEPENDIENTE TODOS POR ILO", "MOVIMIENTO AL SOCIALISMO Y LIBERTAD", "FRENTE AMPLIO PARA EL DESARROLLO DE PUNO - FADEP", "FRENTE AMPLIO REGIONAL", "MOVIMIENTO INDEPENDIENTE HECHOS Y NO PALABRAS", "FRENTE DE AGRICULTORES LA UNION", "MOVIMIENTO INDEPENDIENTE \"LA PERLA\"", "ALTERNATIVA", "MOVIMIENTO REGIONAL \"PARA EL DESARROLLO E INTEGRACION DE AYACUCHO - DIA\"", "ORGANIZACION POLITICA MOPAV", "SOMOS LIBRES", "L.I. NRO 11 FRENTE INDEPENDIENTE SOLIDARIDAD UCHICINA", "MOVIMIENTO INDEPENDIENTE DE ACCION RENOVADORA DE SULLANA - MARS", "L.I. NRO 11 CAMBIO Y SOLUCION", "MOVIMIENTO DEMOCRATICO DE IZQUIERDA", "MOVIMIENTO INDEPENDIENTE FUERZA CAMPESINA", "COMPROMISO UCAYALINO", "L.I. N° 3 FRENTE DEMOCRATICO POPULAR", "MOVIMIENTO DE AFIRMACION SOCIAL - ACCION", "LA MOLINA 2000", "FRENTE UNIDO", "MOVIMIENTO INDEPENDIENTE \"RECUPEREMOS LINCE YA\"", "INTEGRACION DISTRITAL", "SALVEMOS LURIN", "LINDO HUARMEY", "MOVIMIENTO INDEPENDIENTE INNOVACION - SULLANA", "L.I. UNIDAD Y DESARROLLO PASQUEÑOS", "MOVIMIENTO INDEPENDIENTE REGIONAL HORA CERO", "MOVIMIENTO INDEPENDIENTE TRABAJANDO PARA TODOS", "UCAYALI DIGNIDAD", "MOVIMIENTO SOCIAL TUMBES UNIDO", "L.I. NRO 7 UNION POR EL PROGRESO", "INTEGRACION CHINCHANA", "MOVIMIENTO CIVICO AREQUIPA", "TRABAJO MAS TRABAJO", "L.I. NRO 13 MOV IND POR EL DESARROLLO DE MOQ", "L.I. NRO 11 MOVIMIENTO POLITICO INDEPENDIENTE MI PUEBLO", "ALTERNATIVA CAMPESINA", "PUCACACA AL 2000", "ENERGIA COMUNAL AMAZONICA", "VOLUNTAD INDEPENDIENTE DE DESARROLLO AMAZONICO", "MOVIMIENTO INDEPENDIENTE \"YAUYOS ERES TU\"", "L.I. NRO 11 SOMOS CAMBIO 95", "L.I. NRO 9 UNION POR EL PUEBLO", "U.T. VIVA LA MOLINA", "OPORTUNIDAD PARA TODOS", "L.I. NRO 7", "MIRAFLORES UNIDO", "MOVIMIENTO OBRAS", "AREQUIPA PRIMERO", "NUEVA IMAGEN", "MOVIMIENTO INDEPENDIENTE \"FUERZA ICA\"", "L.I. NRO 9 FRENATRACA", "L.I. NRO 11 FRENTE DE CONSTRUCCION Y DESARROLLO", "CUSCO LINDO", "ALIANZA POR AREQUIPA", "MOVIMIENTO REGIONAL INDEPENDIENTE DE CAMPESINOS OBREROS, EMPLEADOS Y ESTUDIANTES", "MOVIMIENTO INDEPENDIENTE \"NUEVO YUNGUYO\"", "L.I. NRO 41 MOVIMIENTOS JUNTOS POR BARRANCA", "IGUALDAD NACIONAL CRISTIANA AUTONOMA", "ALIANZA POPULAR INDEPENDIENTE", "MOVIMIENTO DE INTEGRACION PARA EL DESARROLLO", "VAMOS POR NASCA", "L.I. N° 19", "FRENTE AMPLIO PODER VECINAL", "L.I. NRO 15 ACCION VECINAL PRO PUNO", "L.I. N° 7 DESARROLLO Y RENOVACION - LIDER", "LUCHO POR CASTILLA", "CONTIGO LAREDO", "TRABAJO + TRABAJO", "MOVIMIENTO PARTICIPEMOS", "MOVIMIENTO POLITICO FUERZA HUANCAVELICA", "FRENTE METROPOLITANO", "CORAZON CHORRILLANO", "MOVIMIENTO INDEPENDIENTE \"FRENTE DE DESARROLLO CORRALES\"", "MOVIMIENTO INDEPENDIENTE TAMBOGRANDINO", "UNIDAD DEL PUEBLO", "ALIANZA ELECTORAL UNIDAD POPULAR", "TODOS POR BELEN", "MOVIMIENTO INDEPENDIENTE REGIONAL APURIMAC UNIDO", "MI DISTRITO", "L.I. NRO 9 SOMOS TAHUAMANU", "DEMOCRACIA CON VALORES", "ROCA FUERTE - SEGUNDA JERUSALEN", "FRENTE UNIFICADO LAMBAYECANO", "MOLLEBAYA AHORA", "LISTA INDEPENDIENTE FRENTE CIVICO", "MOVIMIENTO INDEPENDIENTE UNIDOS CONSTRUYENDO", "L.I. NRO 17 HONESTIDA Y TRABAJO", "MOVIMIENTO REGIONAL INDEPENDIENTE CON EL PERU", "MOVIMIENTO INDEPENDIENTE REGIONAL VAMOS LORETO", "UNION CARRIONINA", "MOVIMIENTO INDEPENDIENTE \"PROGRESO VERDE\"", "MOVIMIENTO INDEPENDIENTE FUERZA CONSTRUCTORA", "POR UN FUTURO MEJOR", "L.I. CAMBIO 93", "DIALOGO VECINAL", "MOVIMIENTO DE IZQUIERDA PAMPINA", "MOVIMIENTO INDEPENDIENTE \"FRENTE SOCIAL NUEVA PROPUESTA\"", "MOVIMIENTO AGRARIO POPULAR UCAYALINO", "RUNA", "UNIDAD CAMPESINA INDEPENDIENTE", "L.I N° 3 UDECA", "TARMA CORAZON", "ACCION POR EL BIENESTAR", "MOVIMIENTO CAMBIO 93", "MOVIMIENTO INDEPENDIENTE IDEAS", "MOVIMIENTO POLITICO REGIONAL ENERGIA COMUNAL AMAZONICA", "LA PERLA EMPRENDE, SI SE PUEDE", "MOVIMIENTO INDEPENDIENTE JUNTOS POR EL DESARROLLO", "PIURA RENACE", "L.I.N° 3", "MOVIMIENTO INDEPENDIENTE \"FRENTE DESARROLLO LUCANAS - FREDEL\"", "SECHURANOS UNIDOS", "MOVIMIENTO INDEPENDIENTE UNION YUNGAINA", "VICTORIA AMAZONENSE", "FUERZA REGIONAL AMAZONICA DE MADRE DE DIOS", "OBRAS Y MAS OBRAS", "PLATAFORMA DEMOCRATICA", "LISTA 5", "TODOS UNIDOS POR NUESTRO AYACUCHO", "MOVIMIENTO INDEPENDIENTE \"INTEGRACION REGIONAL\"", "L.I. NRO 21 BARRANCA AL CAMBIO", "SOMOS MIRAFLORES 2002", "MOVIMIENTO REGIONAL JUSTICIA Y CAPACIDAD", "FUERZA CHANCHAMAYO", "INDEPENDIENTE ACUERDO POPULAR", "JUNTOS GOBERNAREMOS", "SIGAMOS MODERNIZANDO PIMENTEL", "ALTERNATIVA LIBRE", "UNION REGIONAL TRANSPARENTE", "MOVIMIENTO INDEPENDIENTE \"AMANECER AGRARIO - MIAA\"", "MOVIMIENTO INDEPENDIENTE AMISTAD", "COMITE INDEPENDIENTE VECINAL DE PUNTA HERMOSA", "MOVIMIENTO INDEPENDIENTE ALTERNATIVA ANDINA", "MOVIMIENTO INDEPENDIENTE \"FUERZA COMUNAL\"", "MOVIMIENTO HUANUCO UNIDO", "ALIANZA REGIONAL INDEPENDIENTE", "POR EL AVANCE DEL SUR", "SI TRABAJA", "UNIDAD Y DESARROLLO", "CHINCHA SI PUEDE", "L.I N° 5 FRENTE INDEPENDIENTE DE RENOVACION Y CAM", "PARTIDO DE INTEGRACION NACIONAL", "MOVIMIENTO INDEPENDIENTE \"UNIDOS POR TINGO MARIA\"", "FRENTE POPULAR DE IZQUIERDA NUEVO COMAS", "MOVIMIENTO INDEPENDIENTE \"RESURGIR SALPINO\"", "L.I. NRO 7 JUNTOS POR SAN LUIS", "PADIN - MOVIMIENTO INDEPENDIENTE REGIONAL", "MOVIMIENTO REGIONAL FUERZA POR MADRE DE DIOS", "MOVIMIENTO INDEPENDIENTE CENTENARIO ESPINAR", "L.I. NRO 17 INKA PACHAKUTEQ", "VIVA LA MOLINA", "ALIANZA POR TACNA", "ADELANTE CHICLAYO", "CONTIGO MOQUEGUA", "SALVEMOS HUARAZ", "TAYACAJA 98", "CAPACIDAD CIUDADANA AL DESARROLLO", "DESARROLLO SOCIAL AMAZONENSE", "L.I. N° 13 CERRO BAUL", "L.I N° 3 MOVIMIENTO INDEPENDIENTE REQUENA", "TE QUIERO WANCHAQ", "MOVIMIENTO POLITICO INDEPENDIENTE \"CHIM PUM CALLAO\"", "IZQUIERDA PAMPINA", "NUEVO SATIPO", "MOVIMIENTO INDEPENDIENTE REIVINDICADOR DE PADRE ABAD (MIRPA)", "TACNA HEROICA", "CONTIGO SIVIA", "FRENTE UNITARIO POPULAR", "L.I. NRO 33 MAYORIA CON EL CAMBIO EN LA CONVENCION", "FRENTE UNITARIO VECINAL PROGRESISTA ALTO PIURA", "MOVIMIENTO DE IDENTIDAD Y CONFIANZA", "ORGANIZACION POLITICA INDEPENDIENTE DISTRITAL ALTERNATIVA VERDE", "NUEVA VICTORIA", "L.I. NRO 15 REGIONAL FUERZA UCAYALINA", "L.I. NRO 7 VAMOS CHURCAMPA", "ACCION CIVICA", "FUERZA CAMPESINA", "ACCION SOLIDARIA", "L.I. MOVIMIENTO REPRESENTACION DISTRITAL SANTA ANITA", "JUNTOS ALCANZAREMOS EL NORTE \"MI JAEN\"", "MOVIMIENTO ETNOCACERISTA REGIONAL AMA SUA, AMA LLULLA, AMA QUELLA", "ORGANIZACION INDEPENDIENTE ASHANINKA DEL PICHIS", "L.I.N° 3 OBRAS", "PISCO AL FUTURO", "MOVIMIENTO POLITICO INDEPENDIENTE \"TODOS TAWANTINSUYO\"", "SALVEMOS LOS OLIVOS", "UNIDOS POR RECUAY", "FRATERNIDAD FAJARDINA", "L.I. NRO 7 ORGANIZACION PARA EL DESARROLLO DE PATAZ", "MOVIMIENTO INDEPENDIENTE DE DESARROLLO LOCAL - MODELO", "MOVIMIENTO INDEPENDIENTE FUERZA CAMPESINA REGIONAL", "L.I. NRO 13 SOMOS HUERTAS - 95", "MOVIMIENTO INDEPENDIENTE COMAS CON FE", "PODER PARA TODOS", "POR EL DESARROLLO DE CONTRALMIRANTE VILLAR", "CAJAMARCA EN ACCION", "INNOVACION", "MOVIMIENTO UNIDOS POR PUEBLO LIBRE", "TODOS SOMOS CHACLACAYO", "MOVIMIENTO INDEPENDIENTE REIVINDIQUEMOS LORETO", "VAMOS CAYMA CON LA NUEVA GENERACION 2014", "MOVIMIENTO INDEPENDIENTE \"ALTERNATIVA POR LA DEMOCRACIA Y DESARROLLO REGIONAL ALPODER\"", "LA ESPERANZA DE LA PROVINCIA DE CHEPEN", "L.I. NRO 9 MID PASCO", "HUANCAVELICA SOSTENIBLE", "MOVIMIENTO POPULAR VASO DE LECHE", "FRENTE INDEPENDIENTE DE BIGOTE", "MOVIMIENTO INDEPENDIENTE NUESTRO ILO-MOQUEGUA", "MAS ACCION", "L.I. N° 7 FRENTE INDEPENDIENTE AGRICOLA", "PRODE - PROGRESO Y DESARROLLO", "MOVIMIENTO INDEPENDIENTE TODOS POR LAMBAYEQUE", "LOS INDEPENDIENTES", "MOVIMIENTO ECOLOGICO ALTERNATIVA VERDE - LOS VERDES", "FUTURO PARA TODOS", "EL GRAN CAMINO", "MOVIMIENTO MACROREGIONAL TODAS LAS SANGRES - APURIMAC", "L.I. N° 3 FRENTE INDEPENDIENTE RENOVADOR (FIR)", "LUCHO POR EL RIMAC", "FUERZA COMUNAL", "RECUPEREMOS VICTOR LARCO", "L.I. NRO 21 CAMBIO", "MOVIMIENTO REGIONAL AREQUIPA UNIDA", "L.I. NRO 11 TRABAJO + TRABAJO", "UNIDOS POR CHINCHA", "MOVIMIENTO LIBERTAD", "VAMOS SULLANA", "CONCIENCIA CHALACA", "MOVIMIENTO INDEPENDIENTE AMANECER ACOLLINO", "ARMANDO EL PROGRESO", "FRENTE RENACIMIENTO SURQUILLANO", "RESURGIR SALPINO", "MOVIMIENTO INDEPENDIENTE \"ACCION Y DESARROLLO\"", "L.I. NRO 7 ORDEN Y DESARROLLO", "ARRIBA CALANA", "COORDINADORA NACIONAL DE INDEPENDIENTES", "L.I. NRO 5", "MOVIMIENTO INDEPENDIENTE \"LUCHEMOS POR HUANUCO\"", "UNIDOS POR EL DESARROLLO", "CONTIGO BREÑA", "UNION POPULAR CHINCHANA", "POR MIRAFLORES JUNTOS PODEMOS...", "FRENTE INDEPENDIENTE UNIDAD VECINAL DE LURIN", "VALE ANCASH", "L.I. NRO 3 UNIDOS POR LA RENOVACION", "FRENTE ESPERANZA POR TACNA", "PROYECTO VECINAL", "MOVIMIENTO REGIONAL LAMBAYECANO PODER PARA TODOS", "L.I. NRO 09 OBRAS + OBRAS", "TUMBES RENACE", "ALIANZA POPULAR INDEPENDIENTE \"VICTOR LARCO HERRERA\"", "RECONSTRUCCION Y DESARROLLO", "ADELANTE A TRIUNFAR", "PAUCARPATA DESARROLLO TOTAL", "MOVIMIENTO POLITICO INDEPENDIENTE \"DEMOCRACIA ANDINA REGIONAL\"", "FRENTE DE INTEGRACION VECINAL DE UTCUBAMBA", "FRENTE AMPLIO", "MUVA", "L.I. NRO 25 SOMOS MM", "L.I. NRO 3 UNIDOS POR CHEPEN", "MOVIMIENTO ACCION SOCIAL INDEPENDIENTE", "MOVIMIENTO INDEPENDIENTE SOMOS NUEVA GENERACION", "PUJANZA SAMEGUANA", "L.I. NRO 19 UNIDAD VECINAL CASTELLANA", "NUESTRO ILO - MOQUEGUA", "CONTIGO REGION", "FRENTE DE DESARROLLO JUNTOS POR PAUCARPATA", "FRENTE INDEPENDIENTE PASCO UNIDO", "L.I. NRO 9 IZQUIERDA UNIDA", "ORGANIZACION POLITICA REGIONAL \"VICTORIA CHALACA\"", "L.I. NRO 3 MOVIMIENTO INDIGENA 95", "MOVIMIENTO INDEPENDIENTE \"POR LA AGRICULTURA Y TRABAJO DE CHAO\"", "L.I. NRO 21 MOV IND L AMERICAS", "DIGNIDAD Y ESPERANZA FERREÑAFANA", "RENOVACION CONVENCIANA", "L.I. NRO 9 NUEVA ALTERNATIVA", "DESARROLLO PARA TACNA", "L.I. N° 7", "L.I. NRO 9 SUCRE TECNOLOGIA Y DESARROLLO", "POR LAS COMUNIDADES FUENTE DE INTEGRACION ANDINA DE PUNO - CONFIA - PUNO", "LIDER", "ALIANZA HORA CERO FUERZA POPULAR", "PODER Y CAMBIO AL 2010", "AGROPECUARIO HONORIA PROGRESO", "LINEA DE IDENTIDAD Y DESARROLLO SATIPEÑO - LIDER´S", "MOVIMIENTO CIVICO NACIONAL 7 DE JUNIO INDEPENDIENTES PASQUEÑOS", "ANCASH DIGNIDAD", "MOVIMIENTO INDEPENDIENTE TALARA SOMOS GENTE JOVEN", "MOVIMIENTO INDEPENDIENTE OBRAS AL 2000", "MOVIMIENTO CAMPESINO ATUSPARIA", "UNIDAD REGIONAL", "MOVIMIENTO INDEPENDIENTE UVAS - UNION VECINAL DE AVANZADA SUNAMPINA", "TODO POR UCAYALI", "L.I. NRO 5 FRENTE INDEPENDIENTE RENOVADOR - FIR", "MOV. DEMOCRATICO DE IZQUIERDA", "MOVIMIENTO POPULAR REGIONAL", "L.I. NRO 25 FRATERNIDAD NACIONAL", "PUMA 2011", "MOVIMIENTO UCHICINO DE DESARROLLO INTEGRAL MUDI", "MOVIMIENTO INDEPENDIENTE SALVEMOS AYACUCHO", "DIGNIDAD VECINAL", "L.I. NRO 5 UNION POR CARHUAZ", "ACCION Y DESARROLLO", "UPA-TCU UNIDOS PUEBLO AGRO TAMBOGRANDE CASERIOS UNIDOS", "SALVEMOS MIRAFLORES", "PARTIDO SOCIALISTA REVOLUCIONARIO", "LISTA INDEPENDIENTE \"UNION PARA EL DESARROLLO DEL ALTO PIURA\" - UDAP", "MOVIMIENTO DE INTEGRACION INDIGENA Y CAMPESINO", "FRENTE TACNEÑISTA", "L.I. NRO 7 MOV IND FRENTE POPULAR POR MADRE DE DIOS", "L.I. NRO 51 MOVIMIENTO ACCION CIVICA INDEPENDIENTE", "SELVA SUR", "NACE UNA ESPERANZA", "FUERZA POR MADRE DE DIOS", "LISTA 3", "MOVIMIENTO INDEPENDIENTE REGIONAL \"FRENTE UNIDO PROGRESISTA\"", "ESPERANZA CIUDADANA", "MOVIMIENTO ETNOCACERISTA AREQUIPA", "MOVIMIENTO INDEPENDIENTE \"NUEVO FUTURO DE ILO\"", "L. I. PAZ Y DESARROLLO", "RECONSTRUCCION EFECTIVA", "MOVIMIENTO CIVICO REGIONAL \"TODO POR UCAYALI\"", "MOVIMIENTO INDEPENDIENTE CONTIGO CHORRILLOS", "MOVIMIENTO INKA PACHACUTEQ", "UNIDOS PUEBLO AGRO TAMBOGRANDE CASERIOS UNIDOS", "FRENTE INDEPENDIENTE EL PUEBLO ORGANIZADO", "MOVIMIENTO INDEPENDIENTE INTEGRACIONISTA ALTO AMAZONAS M.I.I.A.A.", "L.I. NRO 11 95 YUNGUYO AL FUTURO", "CASTILLA AVANZA", "MOVIMIENTO INDEPENDIENTE \"JUNTOS POR EL CALLAO\"", "UNIDOS POR EL CAMBIO ZARUMILLA", "SOMOS MARIANO MELGAR", "ACCION DE GOBERNABILIDAD PARA LA UNIDAD ANDINA", "L.I. NRO 13 DE LA UNIV", "BARRANCO SOLIDARIO", "MOVIMIENTO INDEPENDIENTE PROVINCIAL \"CONCERTANDO SI PODEMOS\"", "LISTA INDEPENDIENTE \"CONFRATERNIDAD TAYACAJINA\"", "CHIMPUM - CALLAO", "MOVIMIENTO INDEPENDIENTE AMOR POR MADRE DE DIOS", "CIENCIA Y ACCION MOVILIZADORA DE UCAYALI", "L.I N° 13 FRENTE PROGRESISTA DE MASAS", "L.I. NRO 17", "ARRIBA CAÑETE", "L.I. N° 5 UNIDAD POPULAR"];
+
+// ===============================================
+// FUNCIÓN MAESTRA DE CONTEO DE CAMISETAS
+// ===============================================
+function calcularCamisetasUnicas(candidato) {
+    let historialSeguro = ensureArray(candidato.historialElectoral);
+    
+    // Extraemos partidos y quitamos vacíos
+    let partidosCrudos = historialSeguro.map(h => h.partido).filter(Boolean);
+    if (candidato.partidoActual) partidosCrudos.push(candidato.partidoActual);
+    
+    const limpiarNombre = (nombre) => nombre.trim().toUpperCase().replace(/\.$/, '');
+
+    // === EL FILTRO FALTANTE QUE APLICA LA REGLA EDITORIAL ===
+    partidosCrudos = partidosCrudos.filter(p => !PARTIDOS_EXCLUIDOS.includes(limpiarNombre(p)));
+    // =========================================================
+
+    // Buscador de Raíz Canónica (Resuelve cadenas A->B->C y unifica JNE vs CSV)
+    const obtenerRaizCanonica = (partido) => {
+        let conectados = new Set([partido]);
+        let queue = [partido];
+        
+        while(queue.length > 0) {
+            let actual = queue.shift();
+            
+            // Buscar hacia adelante
+            let destino = DICCIONARIO_CLONES[actual];
+            if (destino && !conectados.has(destino)) {
+                conectados.add(destino);
+                queue.push(destino);
+            }
+            
+            // Buscar hacia atrás
+            for (let origen in DICCIONARIO_CLONES) {
+                if (DICCIONARIO_CLONES[origen] === actual && !conectados.has(origen)) {
+                    conectados.add(origen);
+                    queue.push(origen);
+                }
+            }
+        }
+        return Array.from(conectados).sort()[0];
+    };
+
+    // Homologamos el diccionario de alianzas a raíces universales
+    const ALIANZAS_RAIZ = {};
+    for (let alianza in DICCIONARIO_ALIANZAS) {
+        let alianzaRaiz = obtenerRaizCanonica(limpiarNombre(alianza));
+        let miembrosRaiz = DICCIONARIO_ALIANZAS[alianza].map(limpiarNombre).map(obtenerRaizCanonica);
+        ALIANZAS_RAIZ[alianzaRaiz] = miembrosRaiz;
+    }
+
+    // FASE 1: Limpieza de Clones y Nomenclatura
+    let partidosClonados = partidosCrudos.map(limpiarNombre).map(obtenerRaizCanonica);
+    let pSet = Array.from(new Set(partidosClonados));
+
+    // FASE 2: Absorción de Alianzas
+    let partidosFinales = [];
+
+    for (let p of pSet) {
+        if (ALIANZAS_RAIZ[p]) {
+            let miembrosAlianza = ALIANZAS_RAIZ[p];
+            let tieneMiembro = false;
+            
+            for (let miembro of miembrosAlianza) {
+                if (pSet.includes(miembro) && p !== miembro) {
+                    tieneMiembro = true;
+                    break;
+                }
+            }
+
+            if (tieneMiembro) {
+                continue; // REGLA 2: Se absorbe (No suma)
+            } else {
+                partidosFinales.push(p); // REGLA 3: Alianza invitada (Suma)
+            }
+        } else {
+            partidosFinales.push(p); // REGLA NORMAL (Suma)
+        }
+    }
+
+    return partidosFinales.length;
+}
+
+
+
 // ===============================================
 // INICIALIZACIÓN
 // ===============================================
@@ -217,6 +365,11 @@ async function initApp() {
             selectTimeline.addEventListener('change', (e) => renderTimeline(todosLosCandidatos, e.target.value));
         }
         renderTimeline(todosLosCandidatos, "ALL");
+
+        // ==========================================
+        // 5. Ranking de Perdedores
+        // ==========================================
+        renderRankingPerdedores(todosLosCandidatos);
 
     } catch (error) {
         console.error("Fallo al cargar datos:", error);
@@ -305,30 +458,22 @@ function calcularRankings(candidatos, partidoFiltro = "ALL") {
     let pool = candidatos;
     if (partidoFiltro !== "ALL") pool = candidatos.filter(c => c.partidoActual === partidoFiltro);
 
-    // RANKING 1: Cambios de Camiseta (Afectado por el dropdown)
+    // RANKING 1: Cambios de Camiseta usando la nueva lógica de clusters
     let rankingCamisetas = pool.map(c => {
-        let historialSeguro = ensureArray(c.historialElectoral);
-        let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
-        if(c.partidoActual) partidosUsados.push(c.partidoActual);
-        let uniqueParties = new Set(partidosUsados);
-        return { ...c, metrica: uniqueParties.size };
+        return { ...c, metrica: calcularCamisetasUnicas(c) };
     }).sort((a, b) => b.metrica - a.metrica).slice(0, 5);
 
     // RANKING 2: PARTIDOS CON MÁS CAMALEONES (SIEMPRE GLOBAL)
     const conteoPartidos = {};
     
-    // Usamos 'candidatos' originales en lugar de 'pool' para que NO le afecte el dropdown
+    // Usamos la nueva lógica de clusters para saber si el candidato es camaleón
     candidatos.forEach(c => {
-        let historialSeguro = ensureArray(c.historialElectoral);
-        let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
-        if (c.partidoActual) partidosUsados.push(c.partidoActual);
-        let uniqueParties = new Set(partidosUsados);
-        if (uniqueParties.size > 1) {
+        let totalCamisetas = calcularCamisetasUnicas(c);
+        if (totalCamisetas > 1) {
             conteoPartidos[c.partidoActual] = (conteoPartidos[c.partidoActual] || 0) + 1;
         }
     });
 
-    // Convertimos el conteo de partidos en un formato que la tarjeta entienda
     let rankingPartidos = Object.entries(conteoPartidos)
         .map(([nombrePartido, cantidad]) => {
             const idPart = normalizarId(nombrePartido);
@@ -336,8 +481,8 @@ function calcularRankings(candidatos, partidoFiltro = "ALL") {
             return {
                 nombre: nombrePartido,
                 metrica: cantidad,
-                partidoActual: null, // Lo dejamos en null para que no dibuje la medallita superpuesta redundante
-                idFoto: logoPartido  // Mandamos el logo del partido para que lo dibuje en el círculo grande
+                partidoActual: null, // Evita la medallita doble
+                idFoto: logoPartido  // Manda el logo al círculo principal
             };
         })
         .sort((a, b) => b.metrica - a.metrica)
@@ -348,6 +493,8 @@ function calcularRankings(candidatos, partidoFiltro = "ALL") {
         { titulo: "Partidos con más camaleones", data: rankingPartidos, label: "candidatos" }
     ];
 }
+
+
 
 function renderRankings(rankingsData, partidoFiltro = "ALL") {
     const wrapper = document.getElementById('rankings-wrapper');
@@ -457,6 +604,9 @@ function generarRopaHTML(historial, tipoRopa) {
     }).join('');
 }
 
+// ===============================================
+// RENDERIZADO DE LA TARJETA DEL CANDIDATO
+// ===============================================
 function renderTarjetaCandidato(candidato, containerId) {
     const container = document.getElementById(containerId);
     if(!container) return;
@@ -470,7 +620,7 @@ function renderTarjetaCandidato(candidato, containerId) {
     let colorPartido = CONFIG.colores.partidos[pActual] || CONFIG.colores.partidos["DEFECTO"];
     let iniciales = getInitials(candidato.nombre);
     
-    let fotoPerfil = candidato.idFoto ? `<img src="${getUrlImagen(candidato.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${iniciales}'"/>` : iniciales;
+    let fotoPerfil = candidato.idFoto ? `<img src="${getUrlImagen(candidato.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='<span style=\\'font-size: 24px; font-weight: bold;\\'>${iniciales}</span>'"/>` : `<span style="font-size: 24px; font-weight: bold;">${iniciales}</span>`;
     
     let cargosLabel = Array.isArray(candidato.cargos) ? candidato.cargos.join(' / ') : (candidato.cargos || '');
 
@@ -481,20 +631,23 @@ function renderTarjetaCandidato(candidato, containerId) {
     };
 
     let historialElectoralSeguro = ensureArray(candidato.historialElectoral);
+
+    // === FILTRO VISUAL: Borra el movimiento local de la línea de tiempo ===
+    const limpiarNombre = (nombre) => nombre.trim().toUpperCase().replace(/\.$/, '');
+    historialElectoralSeguro = historialElectoralSeguro.filter(h => !PARTIDOS_EXCLUIDOS.includes(limpiarNombre(h.partido)));
+    // =======================================================================
+
     let historialElectoralOrdenado = historialElectoralSeguro.slice().sort((a, b) => extraerAnioInicial(a.anio) - extraerAnioInicial(b.anio));
     historialElectoralOrdenado.push(postulacion2026); 
 
     let camElectorales = generarRopaHTML(historialElectoralOrdenado, 'camiseta.png');
 
-    // Calcular número total de camisetas políticas únicas
-    let pSet = new Set(historialElectoralSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean));
-    if (pActual) pSet.add(pActual);
-    let totalCamisetas = pSet.size;
+    let totalCamisetas = calcularCamisetasUnicas(candidato);
 
     const html = `
         <div class="candidate-card" style="border-top-color: ${colorPartido}">
             <div class="card-header-flex">
-                <div class="avatar-initials" style="color: ${colorPartido}; background-color: ${colorPartido}20; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <div class="avatar-initials" style="color: ${colorPartido}; background-color: ${colorPartido}20; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 24px;">
                     ${fotoPerfil}
                 </div>
                 <div class="card-info">
@@ -611,13 +764,10 @@ function renderHeatmap(candidatos, partidoFiltro = "ALL") {
     
     pool.forEach(c => {
         let historialSeguro = ensureArray(c.historialElectoral);
-        
         const totalParticipaciones = historialSeguro.length + 1; 
         
-        let partidosUsados = historialSeguro.map(h => h.partido_matriz || h.partido).filter(Boolean);
-        if (c.partidoActual) partidosUsados.push(c.partidoActual);
-        
-        let uniqueParties = new Set(partidosUsados).size;
+        // Calculamos las camisetas usando la lógica de clusters
+        let uniqueParties = calcularCamisetasUnicas(c);
         
         let colIndex = Math.min(totalParticipaciones - 1, 9);
         let rowIndex;
@@ -885,4 +1035,63 @@ function renderTimeline(candidatos, partidoFiltro = "ALL") {
             }
         }
     });
+}
+
+// ===============================================
+// RANKING DE PERDEDORES (SIN VICTORIAS)
+// ===============================================
+function renderRankingPerdedores(candidatos) {
+    const container = document.getElementById('ranking-perdedores-container');
+    if(!container) return;
+
+    // 1. Encontrar a los que nunca ganaron
+    let perdedores = candidatos.filter(c => {
+        let historial = ensureArray(c.historialElectoral);
+        if(historial.length === 0) return false; // Si no tiene historial, no aplica
+        
+        // Contamos si tiene alguna victoria ("SI")
+        let victorias = historial.filter(h => h.elegido && h.elegido.toUpperCase().trim() === 'SI').length;
+        
+        // Retorna TRUE solo si tiene 0 victorias
+        return victorias === 0;
+    });
+
+    // 2. Contar todas sus postulaciones (AQUÍ SÍ CUENTA TODO)
+    let perdedoresMapeados = perdedores.map(c => {
+        let totalPostulaciones = ensureArray(c.historialElectoral).length;
+        return { ...c, totalPostulaciones };
+    });
+
+    // 3. Ordenar de mayor a menor cantidad de derrotas
+    perdedoresMapeados.sort((a, b) => b.totalPostulaciones - a.totalPostulaciones);
+
+    // 4. Tomamos el Top 5 de los más perdedores
+    let topPerdedores = perdedoresMapeados.slice(0, 5);
+
+    // 5. REGLA DE DISEÑO: "A la derecha el más perdedor"
+    // Invertimos el array para que el número 1 quede al final visualmente
+    topPerdedores.reverse();
+
+    // 6. Generar el HTML
+    let html = '';
+    topPerdedores.forEach(c => {
+        let pActual = c.partidoActual || "INDEPENDIENTE";
+        let colorPartido = CONFIG.colores.partidos[pActual] || CONFIG.colores.partidos["DEFECTO"];
+        let iniciales = getInitials(c.nombre);
+        
+        let fotoHtml = c.idFoto ? 
+            `<img src="${getUrlImagen(c.idFoto)}" class="loser-avatar" onerror="this.outerHTML='<div class=\\'loser-avatar\\' style=\\'color:${colorPartido};\\'>${iniciales}</div>'"/>` : 
+            `<div class="loser-avatar" style="color:${colorPartido};">${iniciales}</div>`;
+
+        html += `
+            <div class="loser-card" style="border-top: 3px solid ${colorPartido};">
+                <div class="loser-party-circle" style="background-color: ${colorPartido};" title="Postula por: ${pActual}"></div>
+                ${fotoHtml}
+                <div class="loser-name">${c.nombre}</div>
+                <div class="loser-stats">${c.totalPostulaciones} derrotas</div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
 }
