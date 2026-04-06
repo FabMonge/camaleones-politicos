@@ -19,11 +19,11 @@ const CONFIG = {
         ]
     },
     archivos: {
-        masterJSON: "Data_lista/candidatos_super_master.json",
-        partidosJSON: "Data_lista/diccionario_partidos.json" 
+        masterJSON: "https://fabmonge.github.io/camaleones-politicos//Data_lista/candidatos_super_master.json",
+        partidosJSON: "https://fabmonge.github.io/camaleones-politicos//Data_lista/diccionario_partidos.json" 
     },
     rutas: {
-        baseFotos: "fotos/",
+        baseFotos: "https://fabmonge.github.io/camaleones-politicos/fotos/",
     }
 };
 
