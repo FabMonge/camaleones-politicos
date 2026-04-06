@@ -735,3 +735,12 @@ path.leaflet-interactive { transition: fill 0.8s ease-in-out, stroke 0.8s ease-i
     font-family: 'IvyJournal', 'Georgia', serif !important;
 }
 
+.story-text p i{
+	font-style: italic;
+}
+
+.instrucciones-caja
+li strong {
+    color:#111;
+    font-weight: 900;
+}
