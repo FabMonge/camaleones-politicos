@@ -171,6 +171,7 @@ const DICCIONARIO_CLONES = {
     "ALIANZA PARA EL PROGRESO": "ALIANZA PARA EL PROGRESO DEL PERU",
     "PERU LIBERTARIO": "MOVIMIENTO POLITICO REGIONAL PERU LIBRE",
     "RENOVACION POPULAR": "SOLIDARIDAD NACIONAL",
+    "ALIANZA SOLIDARIDAD NACIONAL":"SOLIDARIDAD NACIONAL",
     "PARTIDO POLITICO NACIONAL PERU LIBRE": "PERU LIBERTARIO",
     "PARTIDO DEMOCRATICO SOMOS PERU": "MOVIMIENTO INDEPENDIENTE SOMOS PERU - CAUSA DEMOCRATICA",
     "PARTIDO POLÍTICO CONTIGO": "PERUANOS POR EL KAMBIO",
@@ -489,7 +490,7 @@ function calcularRankings(candidatos, partidoFiltro = "ALL") {
         .slice(0, 5);
 
     return [
-        { titulo: "Top 5 con más cambios de camiseta", data: rankingCamisetas, label: "franquicias" },
+        { titulo: "Top 5 con más cambios de camiseta", data: rankingCamisetas, label: "camisetas" },
         { titulo: "Partidos con más camaleones", data: rankingPartidos, label: "candidatos" }
     ];
 }
@@ -508,10 +509,21 @@ function renderRankings(rankingsData, partidoFiltro = "ALL") {
             return;
         }
 
+        // ========================================================
+        // EL TRUCO: Detectamos qué columna estamos dibujando
+        // Si la etiqueta es "candidatos", es el ranking de partidos
+        // ========================================================
+        const isPartidos = ranking.label === "candidatos"; 
+        
+        // Estilo dinámico: Gris para rostros, Color para logos de partidos
+        const imgStyle = isPartidos 
+            ? "width:100%; height:100%; object-fit:contain; border-radius:50%; background-color:#fff; padding: 2px;" // Partidos (A color)
+            : "width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);"; // Rostros (Gris)
+
         const top1 = ranking.data[0];
         const resto = ranking.data.slice(1); 
         
-        const fotoTop1 = top1.idFoto ? `<img src="${getUrlImagen(top1.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${getInitials(top1.nombre)}'"/>` : getInitials(top1.nombre);
+        const fotoTop1 = top1.idFoto ? `<img src="${getUrlImagen(top1.idFoto)}" style="${imgStyle}" onerror="this.outerHTML='${getInitials(top1.nombre)}'"/>` : getInitials(top1.nombre);
 
         let badgeTop1 = '';
         if(top1.partidoActual) {
@@ -536,7 +548,7 @@ function renderRankings(rankingsData, partidoFiltro = "ALL") {
         `;
 
         resto.forEach((cand, index) => {
-            const fotoResto = cand.idFoto ? `<img src="${getUrlImagen(cand.idFoto)}" style="width:100%; height:100%; object-fit:cover; border-radius:50%; filter: grayscale(100%);" onerror="this.outerHTML='${getInitials(cand.nombre)}'"/>` : getInitials(cand.nombre);
+            const fotoResto = cand.idFoto ? `<img src="${getUrlImagen(cand.idFoto)}" style="${imgStyle}" onerror="this.outerHTML='${getInitials(cand.nombre)}'"/>` : getInitials(cand.nombre);
             
             let badgeResto = '';
             if(cand.partidoActual) {
@@ -838,7 +850,7 @@ function renderHeatmap(candidatos, partidoFiltro = "ALL") {
 // ===============================================
 // FASE 4: TIMELINE 1D (Antigüedad de Afiliación)
 // ===============================================
-const FECHA_LIMITE = new Date(2025, 6, 12); 
+const FECHA_LIMITE = new Date(2024, 7, 12); 
 
 const deadlinePlugin = {
     id: 'deadlinePlugin',
@@ -860,7 +872,7 @@ const deadlinePlugin = {
             ctx.fillStyle = 'rgba(229, 57, 53, 1)';
             ctx.font = 'bold 11px Arial';
             ctx.fillText('12 JUL 2025', xPos - 75, chart.chartArea.top + 15);
-            ctx.fillText('CIERRE PADRÓN', xPos - 100, chart.chartArea.top + 30);
+            ctx.fillText('FECHA LIMITE PARA AFILIARSE PARA CANDIDATEAR', xPos - 100, chart.chartArea.top + 30);
             ctx.restore();
         }
     }
@@ -888,111 +900,155 @@ function getDiasAntiguedad(timestampAfiliacion) {
     return Math.round((FECHA_LIMITE.getTime() - timestampAfiliacion) / msPerDay);
 }
 
+// ===============================================
+// LÍNEA DE TIEMPO (TIMELINE) - BLINDADA
+// ===============================================
+
+// ===============================================
+// LÍNEA DE TIEMPO (TIMELINE) - BÚSQUEDA INTELIGENTE EN JSON
+// ===============================================
+
+window.cacheLogosTimeline = window.cacheLogosTimeline || {};
+
 function renderTimeline(candidatos, partidoFiltro = "ALL") {
     const canvas = document.getElementById('timeline-chart');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (timelineChartInstance) timelineChartInstance.destroy();
 
-    let datasets = [];
-    
-    // Rango extendido para que no queden fuera afiliados de años como 2005 o 2006. 
-    // Fijo para que sirva de escala general de comparación.
-    const minYearScale = new Date(2000, 0, 1).getTime();
+    // --- NUEVO: BUSCADOR INTELIGENTE EN EL DICCIONARIO ---
+    // Recorre todo el JSON buscando el "nombre" real, sin importar la llave
+    const encontrarArchivoLogo = (nombreBuscado) => {
+        if (!nombreBuscado || typeof diccionarioPartidos === 'undefined') return null;
+        
+        const nombreLimpio = nombreBuscado.trim().toUpperCase();
+        
+        for (const key in diccionarioPartidos) {
+            const data = diccionarioPartidos[key];
+            if (data && data.nombre && data.nombre.trim().toUpperCase() === nombreLimpio) {
+                // Si encontró el partido y tiene un logo válido (no vacío)
+                if (data.logo && data.logo.trim() !== "") {
+                    return data.logo; 
+                }
+                return null; 
+            }
+        }
+        return null; // Si termina de buscar y no encuentra nada
+    };
 
+    // --- MOTOR DE FECHAS ---
+    const OBTENER_TIMESTAMP = (c) => {
+        if (!c.historialPartidario || !Array.isArray(c.historialPartidario)) return null;
+        let af = c.historialPartidario.find(h => h.partido === c.partidoActual);
+        if (!af || !af.fechaInicio) return null;
+        let p = af.fechaInicio.split(/[\/\-]/);
+        if (p.length === 3) {
+            let d = p[0].length === 4 ? new Date(p[0], p[1]-1, p[2]) : new Date(p[2], p[1]-1, p[0]);
+            return isNaN(d.getTime()) ? null : d.getTime();
+        }
+        return null;
+    };
+
+    const minX = (partidoFiltro === "ALL") ? new Date(2020, 0, 1).getTime() : new Date(2000, 0, 1).getTime();
+    const maxX = new Date(2025, 11, 31).getTime();
+
+    let datasets = [];
+    const dataPoints = [];
+    const bgColors = [];
+
+    // ==========================================
+    // INYECTOR DE LOGOS EN VIVO 
+    // ==========================================
+    const inyectarLogoEnVivo = (context) => {
+        if (!context.raw || !context.raw.partido) return 'circle';
+        
+        const nombrePartido = context.raw.partido;
+        const nombreParaCache = nombrePartido.trim().toUpperCase();
+        
+        // 1. ¿Ya lo cargamos antes? Lo devuelve al instante
+        if (window.cacheLogosTimeline[nombreParaCache] && window.cacheLogosTimeline[nombreParaCache].complete) {
+            return window.cacheLogosTimeline[nombreParaCache];
+        }
+        
+        // 2. Si no lo tenemos, usamos el Buscador Inteligente
+        const archivoLogo = encontrarArchivoLogo(nombrePartido);
+        
+        if (archivoLogo) {
+            if (!window.cacheLogosTimeline[nombreParaCache]) {
+                const img = new Image();
+                img.onload = () => { if (timelineChartInstance) timelineChartInstance.update(); };
+                
+                // Usamos la ruta correcta con tu función
+                img.src = typeof getUrlImagen === 'function' ? getUrlImagen(archivoLogo) : `fotos/${archivoLogo}`;
+                img.width = (partidoFiltro === "ALL") ? 24 : 16;
+                img.height = (partidoFiltro === "ALL") ? 24 : 16;
+                
+                window.cacheLogosTimeline[nombreParaCache] = img; // Lo guardamos en memoria
+            }
+        }
+        return 'circle'; // Dibuja círculo mientras carga o si no hay logo
+    };
+
+    // ==========================================
+    // RECOLECCIÓN DE DATOS
+    // ==========================================
     if (partidoFiltro === "ALL") {
         const partyStats = {};
         candidatos.forEach(c => {
-            const timestamp = extractAffiliationTimestamp(c);
-            if (timestamp !== null && timestamp <= FECHA_LIMITE.getTime()) {
-                const p = c.partidoActual;
-                if (!partyStats[p]) partyStats[p] = { sumTimestamp: 0, count: 0 };
-                partyStats[p].sumTimestamp += timestamp;
+            const ts = OBTENER_TIMESTAMP(c);
+            if (ts) {
+                const p = c.partidoActual || "INDEPENDIENTE";
+                if (!partyStats[p]) partyStats[p] = { sum: 0, count: 0 };
+                partyStats[p].sum += ts;
                 partyStats[p].count++;
             }
         });
 
-        const dataPoints = [];
-        const pointStyles = [];
-        const bgColors = [];
-        
-        const sortedParties = Object.keys(partyStats).sort((a,b) => {
-            return (partyStats[a].sumTimestamp / partyStats[a].count) - (partyStats[b].sumTimestamp / partyStats[b].count);
-        });
+        const sorted = Object.keys(partyStats).sort((a,b) => (partyStats[a].sum/partyStats[a].count) - (partyStats[b].sum/partyStats[b].count));
+        const yLevels = [-7, 7, -5, 5, -3, 3, -1, 1, 0, -6, 6, -4, 4, -2, 2];
 
-        const yLevels = [-8, 8, -6, 6, -4, 4, -7, 7, -5, 5, -3, 3, -2, 2, -1, 1, 0];
-
-        sortedParties.forEach((p, index) => {
-            const avgTimestamp = partyStats[p].sumTimestamp / partyStats[p].count;
-            const yPos = yLevels[index % yLevels.length];
-
-            dataPoints.push({ 
-                x: avgTimestamp, 
-                y: yPos, 
-                partido: p, 
-                count: partyStats[p].count,
-                diasPromedio: getDiasAntiguedad(avgTimestamp)
-            });
-
-            const idPart = normalizarId(p);
-            const logoUrl = (diccionarioPartidos[idPart] && diccionarioPartidos[idPart].logo) ? getUrlImagen(diccionarioPartidos[idPart].logo) : null;
-            
-            if (logoUrl) {
-                const img = new Image();
-                img.src = logoUrl;
-                img.width = 24; 
-                img.height = 24;
-                pointStyles.push(img);
-            } else {
-                pointStyles.push('circle');
-            }
-
-            bgColors.push(hexToRgba(CONFIG.colores.partidos[p] || CONFIG.colores.partidos["DEFECTO"], 0.85));
+        sorted.forEach((p, i) => {
+            const avg = partyStats[p].sum / partyStats[p].count;
+            dataPoints.push({ x: avg, y: yLevels[i % yLevels.length], partido: p, count: partyStats[p].count });
+            bgColors.push((typeof CONFIG !== 'undefined' && CONFIG.colores.partidos[p]) ? CONFIG.colores.partidos[p] : "#95A5A6");
         });
 
         datasets.push({
-            label: 'Promedio por Partido',
+            label: 'Promedio',
             data: dataPoints,
             backgroundColor: bgColors,
-            borderColor: '#111',
-            borderWidth: 1.5,
-            pointRadius: 8,
-            pointHoverRadius: 12,
-            pointStyle: pointStyles 
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            pointRadius: 14,
+            pointHoverRadius: 16,
+            pointStyle: inyectarLogoEnVivo 
         });
         
     } else {
-        const dataPoints = [];
-
-        candidatos.forEach(c => {
-            if (c.partidoActual === partidoFiltro) {
-                const timestamp = extractAffiliationTimestamp(c);
-                if (timestamp !== null && timestamp <= FECHA_LIMITE.getTime()) {
-                    const yPos = (Math.random() * 18) - 9; 
-
-                    dataPoints.push({
-                        x: timestamp,
-                        y: yPos, 
-                        nombre: c.nombre,
-                        partido: c.partidoActual,
-                        diasAfiliado: getDiasAntiguedad(timestamp)
-                    });
-                }
+        candidatos.filter(c => c.partidoActual === partidoFiltro).forEach(c => {
+            const ts = OBTENER_TIMESTAMP(c);
+            if (ts) {
+                dataPoints.push({ x: ts, y: (Math.random() * 14) - 7, nombre: c.nombre, partido: partidoFiltro });
             }
         });
 
-        let pColor = CONFIG.colores.partidos[partidoFiltro] || CONFIG.colores.partidos["DEFECTO"];
+        let pColor = (typeof CONFIG !== 'undefined' && CONFIG.colores.partidos[partidoFiltro]) ? CONFIG.colores.partidos[partidoFiltro] : "#95A5A6";
+
         datasets.push({
-            label: 'Afiliados Vigentes',
+            label: 'Afiliados',
             data: dataPoints,
-            backgroundColor: hexToRgba(pColor, 0.7),
-            borderColor: hexToRgba(pColor, 1),
-            borderWidth: 1,
-            pointRadius: 6,
-            pointHoverRadius: 9
+            backgroundColor: pColor,
+            borderColor: '#ffffff',
+            borderWidth: 1.5,
+            pointRadius: 10,
+            pointHoverRadius: 12,
+            pointStyle: inyectarLogoEnVivo
         });
     }
 
+    // ==========================================
+    // RENDERIZADO
+    // ==========================================
     timelineChartInstance = new Chart(ctx, {
         type: 'scatter',
         data: { datasets: datasets },
@@ -1005,37 +1061,24 @@ function renderTimeline(candidatos, partidoFiltro = "ALL") {
                 legend: { display: false },
                 tooltip: {
                     backgroundColor: 'rgba(17,17,17,0.95)',
-                    titleFont: { size: 14, family: 'Arial', weight: 'bold' },
-                    bodyFont: { size: 13, family: 'Arial', lineHeight: 1.4 },
-                    padding: 12,
                     callbacks: {
-                        label: (context) => {
-                            const p = context.raw;
-                            const fechaLegible = new Date(p.x).toLocaleDateString('es-PE', { year: 'numeric', month: 'short', day: 'numeric' });
-                            
-                            if (partidoFiltro === "ALL") {
-                                return [ `Partido: ${p.partido}`, `Militantes contabilizados: ${p.count}`, `Afiliación promedio: ${fechaLegible}`, `Antigüedad promedio: ${p.diasPromedio} días antes del cierre` ];
-                            } else {
-                                return [ `Candidato: ${p.nombre}`, `Se afilió el: ${fechaLegible}`, `Antigüedad: ${p.diasAfiliado} días antes del cierre` ];
-                            }
+                        label: (ctx) => {
+                            const d = ctx.raw;
+                            const f = new Date(d.x).toLocaleDateString('es-PE', { year:'numeric', month:'short', day:'numeric'});
+                            return partidoFiltro === "ALL" ? [`${d.partido}`, `Promedio: ${f}`, `Casos: ${d.count}`] : [`${d.nombre}`, `Afiliación: ${f}`];
                         }
                     }
                 }
             },
             scales: {
-                x: {
-                    type: 'linear',
-                    title: { display: true, text: 'Línea de tiempo (Años)', font: { weight: 'bold', size: 13, family: 'Arial' } },
-                    min: minYearScale, 
-                    max: new Date(2025, 11, 31).getTime(),
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { callback: function(value) { return new Date(value).getFullYear(); }, maxTicksLimit: 12, font: { family: 'Arial' } }
-                },
-                y: { display: false, min: -10, max: 10 } 
+                x: { type: 'linear', min: minX, max: maxX, ticks: { callback: v => new Date(v).getFullYear() } },
+                y: { display: false, min: -10, max: 10 }
             }
         }
     });
 }
+
+
 
 // ===============================================
 // RANKING DE PERDEDORES (SIN VICTORIAS)
@@ -1044,48 +1087,71 @@ function renderRankingPerdedores(candidatos) {
     const container = document.getElementById('ranking-perdedores-container');
     if(!container) return;
 
+    // --- BUSCADOR INTELIGENTE DE LOGOS ---
+    const encontrarArchivoLogo = (nombreBuscado) => {
+        if (!nombreBuscado || typeof diccionarioPartidos === 'undefined') return null;
+        const nombreLimpio = nombreBuscado.trim().toUpperCase();
+        for (const key in diccionarioPartidos) {
+            const data = diccionarioPartidos[key];
+            if (data && data.nombre && data.nombre.trim().toUpperCase() === nombreLimpio) {
+                if (data.logo && data.logo.trim() !== "") return data.logo; 
+            }
+        }
+        return null;
+    };
+
     // 1. Encontrar a los que nunca ganaron
     let perdedores = candidatos.filter(c => {
-        let historial = ensureArray(c.historialElectoral);
-        if(historial.length === 0) return false; // Si no tiene historial, no aplica
+        let historial = c.historialElectoral;
+        if(!historial || !Array.isArray(historial) || historial.length === 0) return false; 
         
-        // Contamos si tiene alguna victoria ("SI")
         let victorias = historial.filter(h => h.elegido && h.elegido.toUpperCase().trim() === 'SI').length;
-        
-        // Retorna TRUE solo si tiene 0 victorias
         return victorias === 0;
     });
 
-    // 2. Contar todas sus postulaciones (AQUÍ SÍ CUENTA TODO)
+    // 2. Contar todas sus postulaciones
     let perdedoresMapeados = perdedores.map(c => {
-        let totalPostulaciones = ensureArray(c.historialElectoral).length;
+        let totalPostulaciones = c.historialElectoral.length;
         return { ...c, totalPostulaciones };
     });
 
-    // 3. Ordenar de mayor a menor cantidad de derrotas
+    // 3. Ordenar de mayor a menor derrotas y sacar el Top 5
     perdedoresMapeados.sort((a, b) => b.totalPostulaciones - a.totalPostulaciones);
-
-    // 4. Tomamos el Top 5 de los más perdedores
     let topPerdedores = perdedoresMapeados.slice(0, 5);
 
-    // 5. REGLA DE DISEÑO: "A la derecha el más perdedor"
-    // Invertimos el array para que el número 1 quede al final visualmente
+    // 4. Invertir visualmente (el más perdedor a la derecha)
     topPerdedores.reverse();
 
-    // 6. Generar el HTML
+    // 5. Generar el HTML
     let html = '';
     topPerdedores.forEach(c => {
         let pActual = c.partidoActual || "INDEPENDIENTE";
-        let colorPartido = CONFIG.colores.partidos[pActual] || CONFIG.colores.partidos["DEFECTO"];
-        let iniciales = getInitials(c.nombre);
+        let colorPartido = (typeof CONFIG !== 'undefined' && CONFIG.colores.partidos[pActual]) ? CONFIG.colores.partidos[pActual] : "#95A5A6";
         
+        // Foto del candidato
+        let iniciales = c.nombre ? c.nombre.substring(0, 2).toUpperCase() : "XX";
         let fotoHtml = c.idFoto ? 
-            `<img src="${getUrlImagen(c.idFoto)}" class="loser-avatar" onerror="this.outerHTML='<div class=\\'loser-avatar\\' style=\\'color:${colorPartido};\\'>${iniciales}</div>'"/>` : 
+            `<img src="${typeof getUrlImagen === 'function' ? getUrlImagen(c.idFoto) : `fotos/${c.idFoto}`}" class="loser-avatar" onerror="this.outerHTML='<div class=\\'loser-avatar\\' style=\\'color:${colorPartido};\\'>${iniciales}</div>'"/>` : 
             `<div class="loser-avatar" style="color:${colorPartido};">${iniciales}</div>`;
+
+        // Logo del partido (Búsqueda inteligente)
+        let archivoLogo = encontrarArchivoLogo(pActual);
+        let logoHtml = '';
+        
+        if (archivoLogo) {
+            let logoUrl = typeof getUrlImagen === 'function' ? getUrlImagen(archivoLogo) : `fotos/${archivoLogo}`;
+            // Si hay logo, lo ponemos como imagen dentro del círculo
+            logoHtml = `<img src="${logoUrl}" alt="${pActual}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%; background-color: #fff;" onerror="this.style.display='none'"/>`;
+        } else {
+            // Si no hay logo (o es independiente), pintamos el fondo del color del partido
+            logoHtml = `<div style="width: 100%; height: 100%; border-radius: 50%; background-color: ${colorPartido};"></div>`;
+        }
 
         html += `
             <div class="loser-card" style="border-top: 3px solid ${colorPartido};">
-                <div class="loser-party-circle" style="background-color: ${colorPartido};" title="Postula por: ${pActual}"></div>
+                <div class="loser-party-circle" title="Postula por: ${pActual}" style="border-color: ${colorPartido}; background-color: #fff;">
+                    ${logoHtml}
+                </div>
                 ${fotoHtml}
                 <div class="loser-name">${c.nombre}</div>
                 <div class="loser-stats">${c.totalPostulaciones} derrotas</div>

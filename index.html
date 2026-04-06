@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camaleones políticos - ECData</title>
+    <title>Camisetas políticas - ECData</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -14,7 +14,7 @@
 </head>
 <body>
     <div class="mega-nota-container">
-    <img src="fotos/Camisetas_IMAGEN.png" alt="Especial Camaleones" class="mega-nota-img">
+    <img src="fotos/Camisetas_IMAGEN.png" alt="Especial Camisetas Políticas" class="mega-nota-img">
     </div>
 
     <header class="special-header">
@@ -22,13 +22,13 @@
             <img src="fotos/logo_ecdata.png" alt="Logo ECData" onerror="this.style.display='none'">
         </div>
         
-        <h1 class="headline">Camaleones políticos</h1>
-        <h2 class="subheadline">Los mismos de siempre, en diferentes partidos</h2>
+        <h1 class="headline">Camisetas políticas</h1>
+        <h2 class="subheadline">Los mismos de siempre, en diferentes partidos: Una radiografía del transfuguismo electoral</h2>
         
-        <p class="intro-text">El transfuguismo y el salto de una agrupación a otra es una práctica común en la política peruana. Exploramos el historial de los candidatos que postulan en las elecciones 2026 para descubrir cuántas camisetas han vestido a lo largo de su carrera.</p>
+        <p class="intro-text">El salto de una agrupación a otra es una práctica común en la política peruana. Exploramos el historial de los más de 8 mil candidatos al Congreso bicameral para descubrir cuántas camisetas políticas vistieron a lo largo de sus aventuras electorales.</p>
         
         <div class="header-divider"></div>
-        <div class="date-published">31 de marzo de 2026</div>
+        <div class="date-published">5 de abril de 2026</div>
         
         <div class="social-share-container">
             <a href="https://www.facebook.com/sharer/sharer.php?u=https://elcomercio.pe/ecdata/keiko-fujimori-rafael-lopez-aliaga-elecciones-onpe-jne-pcm-12-de-abril-alfonso-lopez-chau-carlos-alvarez-congreso-noticia/" class="social-btn" title="Compartir en Facebook">
@@ -44,19 +44,20 @@
     </header>
 
     <article class="story-text">
-        <p>A menos de un mes de los comicios, el mapa de candidatos revela una constante: la lealtad partidaria es una excepción, no la regla. Al analizar la base de datos de los más de 8,300 postulantes, encontramos un panorama fragmentado donde las agrupaciones políticas funcionan, en muchos casos, como vientres de alquiler.</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ultricies dui vitae risus fringilla porttitor sit amet ac dolor. Etiam luctus nunc metus, ut elementum nunc interdum nec. Mauris sit amet libero fermentum, convallis erat eu, accumsan purus.</p>
+        <p>Este 12 de abril, 8.303 candidatos se disputarán los 190 asientos disponibles en las cámaras de senadores y diputados del nuevo Congreso bicameral. De estos, 2.024 –uno de cada cuatro– ya han postulado antes a algún cargo de elección popular, pero con un partido político distinto al que representan en esta elección.</p>
+        <p>Los partidos con mayor porcentaje de candidatos que postularon antes con otra organización son Alianza para el Progreso (APP) y Renovación Popular. En ambos casos, el 43% de sus aspirantes al Congreso se pusieron, en elecciones pasadas, una camiseta política distinta. Apenas por debajo están Podemos Perú, Perú Primero y Venceremos (ver infografía).</p>
     </article>
 
     <div class="instrucciones-caja">
         <span class="instrucciones-titulo">💡 Cómo leer estos rankings:</span>
         <ul>
-            <li>Explora a los políticos con mayor cantidad de partidos en su historial.</li>
-            <li><strong>Filtra por agrupación:</strong> Usa el menú inferior para aislar a los candidatos que hoy postulan por un partido en específico.</li>
+            <li>A la izquierda, encontrarás un ránking con los cinco candidatos al Congreso con mayor cantidad de partidos en su historial electoral. </li>
+            <li>A la derecha, mira las cinco agrupaciones políticas con más candidatos “camaléonicos”</li>
+            <li><strong>Filtra por agrupación:</strong> Utiliza el filtro de la parte superior para conocer los postulantes con más camisetas en cada partido político.</li>
         </ul>
     </div>
     
-    <div class="anio-titulo">El podio del transfuguismo y la insistencia</div>
+    <div class="anio-titulo">El podio del transfuguismo</div>
     
     <div class="ranking-filters-container">
         <select id="ranking-partido-select" class="ranking-dropdown">
@@ -70,19 +71,18 @@
     <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> Infogob (Jurado Nacional de Elecciones)</div>
 
     <article class="story-text">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ultricies dui vitae risus fringilla porttitor sit amet ac dolor. Etiam luctus nunc metus, ut elementum nunc interdum nec.</p>
-        <p>Mauris sit amet libero fermentum, convallis erat eu, accumsan purus. Donec congue mollis ullamcorper. Donec ut turpis aliquam, auctor magna et, viverra eros. Nam ullamcorper quis velit non hendrerit.</p>
+        <p>En la otra orilla, el FREPAP es el partido con menos candidatos que postularon en el pasado con otra organización: solo el 4% de los integrantes de sus listas. Otras agrupaciones con bajo porcentaje de tránsfugas son SíCreo (8%), Un Camino Diferente (9%) y Ciudadanos por el Perú (9%).</p>
     </article>
 
     <div class="instrucciones-caja">
-        <span class="instrucciones-titulo">💡 Comparador: Cara a cara político:</span>
+        <span class="instrucciones-titulo">💡 Cómo usar esta visualización:</span>
         <ul>
-            <li>Encuentra y selecciona a dos candidatos distintos para enfrentar sus historiales lado a lado. <strong>Puedes filtrar por partido para hallarlos más rápido.</strong></li>
-            <li><strong>Línea de tiempo:</strong> Las camisetas están ordenadas de izquierda a derecha, mostrando la más antigua primero y cerrando con su postulación para el 2026.</li>
+            <li>Usa el buscador para seleccionar un partido y candidato y conocer cuántas camisetas políticas vistió en su historia electoral. Al hacerlo, verás las camisetas, el año y el cargo al que postuló con cada organización.</li>
+            <li><strong>Compara:</strong> Utiliza ambos buscadores para comparar el historial partidario electoral de dos candidatos distintos.</li>
         </ul>
     </div>
     
-    <div class="anio-titulo">Comparador: El clóset de los 8,300 candidatos</div>
+    <div class="anio-titulo">El closet partidario de los 8.303 candidatos</div>
     
     <div class="comparator-wrapper">
         <div class="comparator-column">
@@ -117,27 +117,30 @@
     <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> Jurado Nacional de Elecciones (JNE)</div>
 
     <article class="story-text">
-        <p>Pero el salto de partido en partido no siempre garantiza el triunfo. Al analizar el desempeño histórico de cada candidato que hoy postula, cruzando la cantidad de veces que tentó un cargo público contra las veces que resultó victorioso, el panorama revela quiénes son los verdaderos "eternos candidatos".</p>
+        <p>Individualmente, el candidato que más camisetas políticas ha utilizado en sus aventuras electorales es el postulante al Senado –y a la presidencia de la República– Alex Gonzáles Castillo. Contando su candidatura actual por el Partido Demócrata Verde, el también exalcalde de San Juan de Lurigancho habrá participado en nueve elecciones, siempre con una organización distinta.</p>
     </article>
 
     <section class="losers-section">
         <div class="losers-header">
-            <h3 class="losers-title">Los más "salados"</h3>
+            <h3 class="losers-title">Los más perdedores</h3>
             <p class="losers-subtitle">Candidatos con la mayor cantidad de postulaciones en su historia, pero que nunca ganaron una elección.</p>
         </div>
         <div id="ranking-perdedores-container" class="losers-container"></div>
     </section>
 
     <article class="story-text">
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ultricies dui vitae risus fringilla porttitor sit amet ac dolor. Etiam luctus nunc metus, ut elementum nunc interdum nec.</p>
+                <p>Otros postulantes han competido en múltiples elecciones con distintas agrupaciones, aunque sin éxito alguno. Para Fermín Mestas, candidato a diputado por el Partido de los Trabajadores y Emprendedores, este será el proceso electoral número doce. En los once anteriores, no tuvo éxito.</p>
     </article>
     
 
     <div class="instrucciones-caja">
-        <span class="instrucciones-titulo">💡 Cómo leer esta matriz de densidad:</span>
+        <span class="instrucciones-titulo">💡 Cómo leer este gráfico:</span>
         <ul>
-            <li><strong>El color es la clave:</strong> Las celdas más oscuras indican dónde hay una mayor concentración masiva de candidatos.</li>
-            <li><strong>Explora los cuadrantes:</strong> El eje inferior mide la cantidad de veces que postularon, y el eje lateral <strong>cuántas camisetas diferentes usaron en total.</strong> Pasa el cursor sobre cada celda para ver los detalles y ejemplos.</li>
+            <li>Cada cuadrado representa un grupo de candidatos.</li>
+            <li><strong>El color es la clave:</strong> cuanto más oscuro el cuadrado, más candidatos hay en ese grupo.</li>
+            <li><strong>¿Qué muestran los ejes?</strong> El eje horizontal muestra la cantidad de postulaciones y, el vertical, el número de camisetas distintas que se usaron. Así, abajo a la izquierda están los candidatos más “fieles” y, arriba a la derecha, los más “camaleónicos”.</li>
+            <li><strong>Interactúa:</strong> Pulsa sobre cada cuadrado para ver los detalles y utiliza el buscador superior para filtrar por partido político.</li>
+
         </ul>
     </div>
     
@@ -172,19 +175,20 @@
     <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> Procesamiento propio de ECData en base a Infogob</div>
 
     <article class="story-text">
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum ultricies justo ac justo sodales, ut facilisis lorem fermentum. Aenean dictum vitae nisi quis mollis.</p>
+        <p>Las afiliaciones con miras a las elecciones, además, no siempre se realizan con anticipación. Organizaciones como País para Todos, Fe en el Perú y el Partido de los Trabajadores y Emprendedores afiliaron a más de 20 de sus ahora candidatos en el último día de plazo para hacerlo.</p>
+        <p>Por otro lado, Renovación Popular inscribió a 49 militantes durante los últimos 30 días de plazo y a 41 en la última semana. Perú Moderno afilió a 45 en el último mes y a 40 en los últimos siete días.</p>
     </article>
 
     <div class="instrucciones-caja">
         <span class="instrucciones-titulo">💡 Cómo leer esta línea de tiempo:</span>
         <ul>
-            <li><strong>Vista general (Promedios):</strong> Cada punto representa el año promedio en el que los candidatos vigentes se afiliaron a su partido actual.</li>
+            <li>La línea roja representa la fecha límite para que los partidos inscriban como afiliados a sus futuros candidatos: 12 de julio de 2024.</li>
             <li><strong>Vista específica (El Enjambre):</strong> Usa el menú para seleccionar un partido y ver a cada uno de sus candidatos representados por un punto individual en su año de inscripción.</li>
             <li><strong>La línea roja:</strong> Indica la fecha de cierre límite para inscribirse ("FECHA XXXX").</li>
         </ul>
     </div>
 
-    <div class="anio-titulo">Antigüedad partidaria: ¿Militantes históricos o recién llegados?</div>
+    <div class="anio-titulo">Tiempo de afiliación: ¿Militantes históricos o recién llegados?</div>
 
     <div class="ranking-filters-container">
         <select id="timeline-partido-select" class="ranking-dropdown">
@@ -201,20 +205,35 @@
     <div class="source-note" style="margin-top: 20px;"><strong>Fuente:</strong> ROP (Jurado Nacional de Elecciones)</div>
 
     <article class="story-text">
+        <h2>Los partidos como vehículo electoral</h2>
         <p>Aenean dictum vitae nisi quis mollis. Donec congue mollis ullamcorper. Donec ut turpis aliquam, auctor magna et, viverra eros. Nam ullamcorper quis velit non hendrerit.</p>
+        <p>En un sistema partidario sumamente débil como el peruano, los partidos suelen ser percibidos únicamente como medios para competir en una elección. </p>
+        <p>“Lo que tenemos en el Perú es individuos haciendo política. Los partidos aparecen y desaparecen. Entonces, si quieres una trayectoria política larga o que se mantenga, tienes que cambiar de partido si el que te acogió desaparece, o si el partido deja de ser viable”, explica Mauricio Zavaleta, politólogo de la Universidad de Pittsburgh.</p>
+        <p>Así, las organizaciones políticas no son atractivas debido a su ideología o programa, sino por su posibilidad de atraer votos.</p>
+        <p><i>“Las camisetas (políticas), como las llaman, son funcionales a las personas que buscan hacer política. En esa dinámica, la ideología es secundaria”</i>, agrega.</p>
+        <p>En la misma línea, el investigador del Instituto de Estudios Peruanos (IEP) Paulo Vilca sostiene que las personas buscan tener una trayectoria individual “al margen de las organizaciones políticas”.</p>
+        <p><i>“La dinámica de los partidos en el Perú es una suma de individuos que han sabido adaptarse al cambio. Los políticos son flexibles, versátiles y encuentran maneras de seguir en la política. Hay algunos miles de políticos que se mantienen en un solo partido político, pero buena parte no lo hace”</i>, señala.</p>
+        <p>Para Vilca, los partidos de César Acuña y José Luna, APP y Podemos, son ejemplos de organizaciones que suelen captar postulantes con posibilidades de atraer votos, más allá de sus ideales u hoja de vida. </p>
+        <p><i>“Hay una estrategia de buscar candidatos más o menos competitivos. No interesa mucho la trayectoria o las posturas políticas, sino las posibilidades que tengan de ganar. Además, se trata generalmente de actores con experiencia electoral”</i>,indica.</p>
+        <p>Otro caso de partido caudillista, de acuerdo con Vilca, sería Renovación Popular, que ha incluido en sus listas a personas con ideologías distintas a la de su líder.</p>
+        <p><i>“En regiones, lo que han hecho es buscar cuadros. En Piura, por ejemplo, el candidato con el número uno al Senado es el exgobernador Reynaldo Hilbck, quien no es conservador. Es un empresario que ha buscado un espacio para llegar al Senado, y eso se lo ha dado Renovación”</i>, asegura.</p>
+        <p>Distinto es el caso de quienes pasaron de un movimiento regional a un partido político. Para poder postular al Congreso, muchos aspirantes han tenido que dar el salto a las organizaciones de carácter nacional. Según Vilca, finalmente, “se inscriben a los partidos con una lógica de circunstancia electoral”.</p>
+        <h2>Lealtad partidaria</h2>
+        <p>Para Mauricio Zavaleta, además de las posibilidades de ganar de un candidato, hay dos factores que generan lealtad hacia un partido político. En primer lugar, está la identidad política. “Es el caso de Fuerza Popular, un partido heredero de Alberto Fujimori con una clara posición sobre seguridad y economía. Es un partido nostálgico”, explica.</p>
+        <p>En segundo lugar están los recursos económicos y logísticos. “APP y Podemos son partidos que pueden otorgar recursos materiales a sus candidatos. Hablamos de apoyo logístico para las campañas de los políticos. Esto es súper importante para hacer política. No hay tanto una identidad, como la posibilidad de acceder a recursos a través del partido”, advierte.</p>
     </article>
 
     <footer class="special-credits-black">    
         <h3 class="credits-main-title">Créditos</h3>
         
         <div class="credit-block">
-            <span class="credit-role">Investigación y análisis de datos</span>
-            <span class="credit-name">Jorge Falen</span>
+            <span class="credit-role">Investigación y análisis de datos:</span>
+            <span class="credit-name">Fabrizio Monge</span>
         </div>
         
         <div class="credit-block">
             <span class="credit-role">Texto</span>
-            <span class="credit-name">Jorge Falen, Gino Alva</span>
+            <span class="credit-name">Ariana Lira</span>
         </div>
         
         <div class="credit-block">
@@ -223,13 +242,18 @@
         </div>
         
         <div class="credit-block">
+            <span class="credit-role">Entrevistas</span>
+            <span class="credit-name">Gino Alva</span>
+        </div>
+
+        <div class="credit-block">
             <span class="credit-role">Asistencia de producción</span>
             <span class="credit-name">Karla Kennedy</span>
         </div>
         
         <div class="credit-block">
             <span class="credit-role">Edición General</span>
-            <span class="credit-name">Ariana Lira</span>
+            <span class="credit-name">Ariana Lira / Martín Hidalgo</span>
         </div>
 
         <div class="credits-logo-container">
