@@ -1,4 +1,15 @@
 /* =========================================
+   DECLARACIÓN DE FUENTE IVY JOURNAL
+   ========================================= */
+@font-face {
+    font-family: 'IvyJournal';
+    src: url('fonts/fonnts.com-Ivy-Presto-Headline-Semi-Bold.otf') format('opentype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* =========================================
    1. RESET (LIBERACIÓN DE SCROLL)
    ========================================= */
 body, html {
@@ -19,7 +30,7 @@ body, html {
 }
 
 .kicker { margin-bottom: 25px; display: flex; justify-content: center; align-items: center; }
-.kicker img { height: 35px; width: auto; display: block; max-width: 100%; }
+.kicker img { height: 55px; width: auto; display: block; max-width: 100%; }
 
 .headline {
     font-family: 'Georgia', 'Times New Roman', serif; 
@@ -205,7 +216,13 @@ path.leaflet-interactive { transition: fill 0.8s ease-in-out, stroke 0.8s ease-i
 
 .special-credits-black { background-color: #111111; color: #ffffff; padding: 70px 20px; text-align: center; margin-top: 60px; }
 .credits-logo-container { margin-bottom: 40px; }
-.credits-logo-container img { height: 75px; width: auto; display: block; margin: 0 auto; filter: brightness(0) invert(1); }
+.credits-logo-container img { 
+    height: 50px; /* Ajusta este número si lo ves muy grande o muy chico */
+    width: auto; 
+    display: block; 
+    margin: 0 auto; 
+    /* Hemos borrado la línea 'filter: brightness(0) invert(1);' para que respete tu PNG blanco */
+}
 .copyright-text { font-family: 'Arial', sans-serif; font-size: 11px; color: #777777; margin-top: 15px; letter-spacing: 0.5px; }
 .credits-main-title { font-family: 'Georgia', 'Times New Roman', serif; font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; margin-top: 0; margin-bottom: 40px; color: #ffffff; }
 .credit-block { margin-bottom: 25px; display: flex; flex-direction: column; align-items: center; }
@@ -654,3 +671,67 @@ path.leaflet-interactive { transition: fill 0.8s ease-in-out, stroke 0.8s ease-i
     padding: 4px 8px;
     border-radius: 4px;
 }
+
+/* =========================================
+   IMAGEN DE PORTADA (100% ANCHO)
+   ========================================= */
+.mega-nota-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Evita que aparezca scroll horizontal si hay algún desborde */
+}
+
+.mega-nota-img {
+    width: 100%;
+    height: auto;
+    display: block; /* Elimina el pequeño margen invisible que dejan las imágenes por defecto */
+    object-fit: cover; /* Asegura que la imagen mantenga su proporción sin deformarse */
+}
+
+
+/* =========================================
+   CORRECCIÓN CARRUSEL PERDEDORES (CELULARES)
+   ========================================= */
+@media (max-width: 850px) {
+    /* 1. Arregla el corte a la mitad y le da fluidez al deslizar */
+    .losers-container {
+        justify-content: flex-start !important; /* Evita que el primer elemento se salga de la pantalla */
+        padding: 10px 20px 20px 20px !important;
+        scroll-snap-type: x mandatory; /* Scroll con efecto "imán" tipo app nativa */
+        -webkit-overflow-scrolling: touch; /* Deslizamiento ultra suave en iPhones */
+    }
+
+    /* 2. Hace que cada tarjeta no se aplaste y encaje en la pantalla */
+    .loser-card {
+        scroll-snap-align: center;
+        flex-shrink: 0;
+    }
+
+    /* 3. Añade la instrucción mágica solo en celulares */
+    .losers-subtitle::after {
+        content: "👉 Desliza hacia la derecha para ver los demás candidatos.";
+        display: block;
+        margin-top: 12px;
+        font-weight: 900;
+        color: #111; /* Color oscuro que combina con tu diseño */
+        font-size: 13px;
+    }
+}
+
+/* =========================================
+   INYECCIÓN DE IVY JOURNAL A TODOS LOS TÍTULOS
+   ========================================= */
+.headline, 
+.subheadline, 
+.anio-titulo, 
+.ranking-header,
+.history-title, 
+.losers-title, 
+.fase3-title, 
+.credits-main-title,
+.story-text h2, 
+.credit-name {
+    font-family: 'IvyJournal', 'Georgia', serif !important;
+}
+
